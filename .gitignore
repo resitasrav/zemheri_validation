@@ -80,5 +80,4 @@ temp/
 !notebooks/**/*.ipynb
 !scripts/**/*.py
 
-# CLAUDE.md yalnızca lokal bağlam içindir — jüri reposuna gönderilmez
 CLAUDE.md
