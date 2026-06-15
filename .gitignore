@@ -68,16 +68,28 @@ temp/
 *.mp4
 !reports/*.mp4
 
+# ROS 2 ham kayıt klasörleri ve formatları
+*.mcap
+rosbag2_*/
+raw/
+raw_data/
+
 # Curated doğrulama artefaktlarını KORU
 !data/**/*.csv
 !docs/**/*.csv
+!docs/**/*.json
 !docs/**/*.png
 !docs/**/*.pdf
 !docs/**/*.drawio
+!docs/**/*.md
 !reports/**/*.html
 !reports/**/*.png
 !reports/**/*.mp4
 !notebooks/**/*.ipynb
 !scripts/**/*.py
+!src/**/*.py
+!src/**/*.md
+!tools/**/*
 
+# CLAUDE.md jüri deposuna gönderilmez (yalnızca yerel bağlam dosyası)
 CLAUDE.md

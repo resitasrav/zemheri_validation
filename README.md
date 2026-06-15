@@ -4,10 +4,11 @@
 TEKNOFEST 2026 — Su Altı Roket Yarışması · Hazırlık tarihi: 15 Haziran 2026
 
 > Bu depo, SARA otonom yazılım zincirinin (**sensörler → UKF → guidance → kontrolcü → görev FSM/BT**)
-> Gazebo Harmonic simülasyonunda uçtan uca doğrulanmasını belgeler. Her metrik, mümkün olduğunda
-> depo içindeki dosyalardan yeniden hesaplanarak doğrulanmıştır. Doğrulanamayan (ham kaydı bu
-> bundle'da olmayan) metrikler **açıkça etiketlenmiştir** — abartılı veya ispatlanmamış başarı
-> iddiası kullanılmamıştır.
+> Gazebo Harmonic simülasyonunda uçtan uca doğrulanmasını belgeler. Buradaki **tüm sayısal sonuçlar**,
+> takımın gerçek test koşumlarından gelen ham `recording/telemetry.csv` kayıtlarından (final_validation
+> arşivi) **yeniden hesaplanmıştır** — takımın kendi analiz kodundaki ([src/validation/](src/validation/))
+> matematiğin birebir aynısı ile. Hiçbir metrik varsayılmamış, abartılmamış; kabul ölçütünü sağlamayan
+> testler **dürüstçe** `KISMİ` / `WIP` / `Needs Evidence` olarak işaretlenmiştir.
 
 ---
 
@@ -19,13 +20,15 @@ TEKNOFEST 2026 — Su Altı Roket Yarışması · Hazırlık tarihi: 15 Haziran 
 - [Navigation Validation](#navigation-validation)
 - [Guidance Validation](#guidance-validation)
 - [Controller Validation](#controller-validation)
+- [Sensor Health Validation](#sensor-health-validation)
 - [Mission FSM Validation](#mission-fsm-validation)
 - [Fire Behavior Tree Validation](#fire-behavior-tree-validation)
 - [Ocean Current Validation](#ocean-current-validation)
 - [RL Policy Validation](#rl-policy-validation)
 - [RL UKF Diagnosis](#rl-ukf-diagnosis)
 - [Results Summary](#results-summary)
-- [Raw Data](#raw-data)
+- [Core Code / Test Entry Points](#core-code--test-entry-points)
+- [Raw Data and Logs](#raw-data-and-logs)
 - [Reproducibility](#reproducibility)
 - [Known Limitations](#known-limitations)
 - [Repository Structure](#repository-structure)
@@ -35,23 +38,25 @@ TEKNOFEST 2026 — Su Altı Roket Yarışması · Hazırlık tarihi: 15 Haziran 
 ## System Architecture
 
 SARA'nın otonom zinciri ROS 2 tarafında seyir/görev mantığını, Pixhawk/ArduPilot tarafında
-ise iç döngü tutum/derinlik kontrolünü ve bağımsız failsafe'i barındırır. Tam mimari şeması ve
+iç döngü tutum/derinlik kontrolünü ve bağımsız failsafe'i barındırır. Tam mimari şeması ve
 makine-okunur düğüm/bağlantı listeleri [docs/architecture/](docs/architecture/) altındadır.
 
 <img src="docs/architecture/SARA_Sistem_Mimarisi_temiz.png" width="900">
 
+*SARA sistem mimarisi — sensörlerden ArduPilot/PWM çıkışına kadar ROS 2 düğüm zinciri ve failsafe katmanları.*
+
 **Kaynak dosyalar** ( [docs/architecture/](docs/architecture/) ):
+
 | Dosya | İçerik |
 |---|---|
 | [SARA_Sistem_Mimarisi_temiz.png](docs/architecture/SARA_Sistem_Mimarisi_temiz.png) | Mimari diyagram (görsel) |
 | [SARA_Sistem_Mimarisi_temiz.pdf](docs/architecture/SARA_Sistem_Mimarisi_temiz.pdf) | Baskı/sunum sürümü |
 | [SARA_Sistem_Mimarisi_temiz.drawio](docs/architecture/SARA_Sistem_Mimarisi_temiz.drawio) | Düzenlenebilir draw.io kaynağı |
-| [SARA_Sistem_Mimarisi.csv](docs/architecture/SARA_Sistem_Mimarisi.csv) | 23 düğüm (katman + stil), draw.io CSV import |
+| [SARA_Sistem_Mimarisi.csv](docs/architecture/SARA_Sistem_Mimarisi.csv) | 23 düğüm (katman + stil) |
 | [SARA_Baglanti_Listesi.csv](docs/architecture/SARA_Baglanti_Listesi.csv) | 28 bağlantı (kaynak→hedef→veri→tip) |
 
-> **Tutarlılık kontrolü (doğrulandı):** Bağlantı listesindeki tüm 28 kenar uç noktası, düğüm
-> listesindeki 23 düğümden biridir — eksik/yetim referans yoktur.
-> (`python scripts/verify_validation_artifacts.py`).
+> **Tutarlılık kontrolü (doğrulandı):** Bağlantı listesindeki 28 kenar uç noktasının tümü, düğüm
+> listesindeki 23 düğümden biridir — yetim referans yok (`python scripts/verify_validation_artifacts.py`).
 
 ### ROS 2 navigasyon/görev zinciri (tüm testlerde ortak)
 
@@ -76,284 +81,349 @@ ocean_current_node                       navigation_health_node (valid / degrade
                                                                   PWM/Servo → 1 itki motoru + 4 kuyruk servosu
 ```
 
-### Bağlantı kopması / failsafe mantığı
-
-| Katman | Mekanizma | Davranış |
-|---|---|---|
-| ROS 2 (seyir/görev) | `safety_monitor_node` — heartbeat · AI disable · fire inhibit | Kalp atışı kesilirse görevi durdurur, RL tuner'ı devre dışı bırakır, ateşlemeyi inhibe eder |
-| MAVLink köprüsü | `mavlink_bridge_node` TX/RX | ROS ↔ ArduPilot telemetri/komut köprüsü; kopma tespiti |
-| Pixhawk (bağımsız) | `Pixhawk Hold` | Bağlantı koptuğunda son yaw/derinliği tutar → kontrollü yüzeye çıkış |
-| Donanım | `hw_failsafe` | Motor limit · güvenli duruş (kopma anında) |
-| Kurtarma | `reconnect_sync` | Bağlantı geri geldiğinde durum eşitleme → görev devam / abort kararı |
-
-> **Not (kapsam):** RL Tuner (SAC tabanlı PID kazanç ayarlayıcı), mimaride **ateşleme fazında
-> devre dışı** olarak tanımlıdır. Bu deposundaki RL doğrulaması bir *aday politika* değerlendirmesidir
+> **Not (kapsam):** RL Tuner (SAC tabanlı PID kazanç ayarlayıcı) mimaride **ateşleme fazında devre dışı**
+> olarak tanımlıdır. Bu depodaki RL doğrulaması bir *aday politika* değerlendirmesidir
 > (bkz. [RL Policy Validation](#rl-policy-validation)).
 
 ---
 
 ## Validation Methodology
 
-- Tüm performans testleri **ROS kontrol zinciri** (`control_backend:=ros`) ile koşturulur.
-  ArduPilot hız/tutum kontrolü henüz kalibre edilmediğinden performans doğrulamasına **dahil
-  edilmemiştir** (bilinçli kapsam kararı).
-- Her test Gazebo'da sıfırdan başlatılır; rosbag alınır; analiz scriptleri RMSE/metrik üretir;
-  Gazebo kapatılır.
-- Bu **dokümantasyon bundle'ı** her test için analiz raporunu (özet sayfa) içerir. Bazı testlerin
-  ham rosbag/CSV/PNG çıktıları boyut nedeniyle bu bundle'a dahil **değildir**; bu durum aşağıdaki
-  matriste *Evidence* sütununda açıkça gösterilir.
+- Tüm performans testleri **ROS kontrol zinciri** (`control_backend:=ros`) ile koşturulur. ArduPilot
+  hız/tutum kontrolü henüz kalibre edilmediğinden performans doğrulamasına **dahil edilmemiştir** (bilinçli kapsam).
+- Her test Gazebo'da sıfırdan başlatılır → rosbag alınır → takımın analiz kodu RMSE/metrik üretir → Gazebo kapatılır.
+- **Bu depodaki figür ve metrikler**, takımın gerçek koşumlarından gelen ham `recording/telemetry.csv`
+  dışa-aktarımlarından, takım analiz kodundaki aynı matematik ([src/validation/](src/validation/)) ile
+  [scripts/generate_validation_figures.py](scripts/generate_validation_figures.py) tarafından **yeniden
+  üretilmiştir**. Ham telemetry (~235 MB) boyut nedeniyle repoya **dahil değildir**.
 
 ### Durum etiketleri
 
 | Etiket | Anlamı |
 |---|---|
-| **PASS** | Test bir kabul/ret kararı verir ve **kabul** çıktı, ya da performans testi temiz tamamlandı. |
-| **WIP** | Koştu/koşturulabilir ancak kabul eşiği henüz sağlanmadı veya kanıt bu bundle'da kısmi. |
-| **Needs Evidence** | İddia için bu bundle'da doğrudan dosya kanıtı yok. |
+| **PASS** | Test bir kabul/ret kararı verir ve **kabul** çıktı; ya da performans testi temiz tamamlandı ve metrikler iyi. |
+| **KISMİ** | Zincir/akış çalıştı ve bir kısmı kabul oldu, ancak bir kabul ölçütü bu koşumda sağlanmadı. |
+| **WIP** | Koşturulabilir, ancak kabul eşiği henüz sağlanmadı. |
+| **Needs Evidence** | İddia için bu pakette doğrudan izole test kanıtı yok. |
 
 ---
 
 ## Test Inventory
 
-Kanıt sütunundaki ⓛ = ham rosbag/CSV/PNG bu **dokümantasyon bundle'ında yok** (`final_validation`
-arşivinde mevcut); metrik ilgili test analiz sayfasından taşınmıştır. ✓ = kanıt dosyası bu depoda
-mevcuttur.
+Her satır, **gerçek telemetriden yeniden üretilmiş** kanıta bağlanır. Figürler ilgili wiki sayfasına
+ve aşağıdaki bölümlere gömülüdür.
 
-| Layer | Test | Evidence | Status |
-|---|---|---|---|
-| Navigation | Straight Line | [tests/01](tests/01_navigation_straight.md) · ⓛ raw CSV/PNG | PASS |
-| Navigation | Resilience | [tests/05](tests/05_navigation_resilience.md) · ⓛ raw CSV/PNG | PASS |
-| Guidance | LOS | [tests/03](tests/03_guidance_los.md) · ⓛ raw CSV/PNG | PASS |
-| Guidance | Waypoint | [tests/04](tests/04_guidance_waypoint.md) · ⓛ raw CSV/PNG | PASS |
-| Controller | Tracking | [tests/02](tests/02_controller_tracking.md) · ⓛ raw CSV/PNG | PASS |
-| Sensor | Health | [tests/06](tests/06_sensor_health.md) · ⓛ raw CSV/PNG | PASS |
-| FSM | Mission (Stage 1) | [tests/08](tests/08_stage1_fsm.md) · ⓛ raw CSV/PNG | PASS |
-| BT | Mission (Stage 2) | [tests/09](tests/09_stage2_bt.md) · ⓛ raw CSV/PNG | PASS |
-| BT | Fire Decision Logic | safety_monitor (architecture) · no isolated test | Needs Evidence |
-| Ocean Current | Service Robustness | [tests/07](tests/07_ocean_current_services.md) · ✓ [figure](figures/ocean_current_service_activity.png) | PASS |
-| RL | Policy Candidate Validation | ✓ [diagnostics](docs/diagnostics/rl_ukf/) · ✓ [figures](docs/figures/rl/) · ✓ [episode CSV](data/episodes/sara_best_episode.csv) | WIP |
+| Layer | Test | Evidence | Figür | Status |
+|---|---|---|---|:---:|
+| Navigation | Straight Line | [wiki](docs/wiki/navigation_validation.md) · [summary](docs/metrics/navigation_straight/summary.csv) | [göm](#navigation-validation) | **PASS** |
+| Navigation | Resilience (DVL) | [wiki](docs/wiki/navigation_validation.md) · [summary](docs/metrics/navigation_resilience/summary.csv) | [göm](#navigation-validation) | **KISMİ** |
+| Guidance | LOS | [wiki](docs/wiki/guidance_validation.md) · [summary](docs/metrics/guidance_los/summary.csv) | [göm](#guidance-validation) | **PASS** |
+| Guidance | Waypoint | [wiki](docs/wiki/guidance_validation.md) · [summary](docs/metrics/guidance_waypoint/summary.csv) | [göm](#guidance-validation) | **PASS** |
+| Controller | Tracking | [wiki](docs/wiki/controller_validation.md) · [summary](docs/metrics/controller_tracking/summary.csv) | [göm](#controller-validation) | **PASS** |
+| Sensor | Health | [wiki](docs/wiki/sensor_health_validation.md) · [rates](docs/metrics/sensor_health/topic_rates.csv) | [göm](#sensor-health-validation) | **PASS** |
+| FSM | Mission (Stage 1) | [wiki](docs/wiki/mission_fsm_validation.md) · [summary](docs/metrics/stage1_fsm/summary.csv) | [göm](#mission-fsm-validation) | **KISMİ** |
+| BT | Mission (Stage 2) | [wiki](docs/wiki/fire_behavior_tree_validation.md) · [summary](docs/metrics/stage2_bt/summary.csv) | [göm](#fire-behavior-tree-validation) | **KISMİ** |
+| BT | Fire Decision Logic | mimaride tanımlı · izole test yok | — | **Needs Evidence** |
+| Ocean Current | Service Robustness | [wiki](docs/wiki/ocean_current_validation.md) · [summary](docs/metrics/ocean_current_services/summary.csv) | [göm](#ocean-current-validation) | **PASS** |
+| RL | Policy Candidate | [diagnostics](docs/diagnostics/rl_ukf/) · [figures](docs/figures/rl/) · [episode CSV](data/episodes/sara_best_episode.csv) | [göm](#rl-policy-validation) | **WIP** |
 
 ---
 
 ## Navigation Validation
 
-Ayrıntı: [tests/01_navigation_straight.md](tests/01_navigation_straight.md) ·
-[tests/05_navigation_resilience.md](tests/05_navigation_resilience.md) ·
 Wiki: [docs/wiki/navigation_validation.md](docs/wiki/navigation_validation.md)
 
 ### Purpose
-Düz hatta UKF kestiriminin gerçek harekete tutarlılığını; ayrıca DVL gecikme/kesintisi altında
-navigasyonun çökmediğini doğrulamak.
+Düz hatta UKF kestiriminin gerçek harekete (ground truth) tutarlılığını; ve DVL gecikme/kesintisi
+altında navigasyon sağlık denetiminin çökmediğini doğrulamak.
 
 ### Methodology
-`control_backend:=ros`, 50 s düz hat (warmup 5 s, hedef derinlik 2 m). Resilience testi ek olarak
-DVL **0.6 s gecikme** + periyodik **kesinti** düğümleri ve üç paralel UKF dalı (ham/korumalı/OOSM) koşturur.
+`control_backend:=ros`, düz hat (warmup 5 s, hedef derinlik 2 m). Resilience testi ek olarak DVL
+bozulması (gecikme + periyodik kesinti) ve üç paralel UKF dalı koşturur: **saf** robot_localization,
+**sağlık-denetimli** ve **OOSM** (out-of-sequence measurement).
 
-### Inputs
-Gazebo `buoyant_sara.world`, DVL/IMU/basınç köprüleri, `ukf_node`, `navigation_health_node`.
+### Results — Straight Line (gerçek telemetriden)
+| Metrik | Değer |
+|---|---:|
+| 3B konum RMSE | **0.217 m** |
+| Maks. 3B konum hatası | 1.082 m |
+| Derinlik RMSE | **0.0012 m** |
+| Maks. cross-track | 0.158 m |
+| Yaw RMSE | 0.011° |
+| İz boyu mesafe | 32.52 m |
 
-### Results
-| Metrik | Straight | Resilience |
+<img src="docs/figures/navigation/navigation_straight_trajectory_depth.png" width="900">
+
+*Düz hat: GT vs UKF yatay rota (3B RMSE 0.217 m) ve derinlik takibi (RMSE 0.0012 m). Y ekseni
+ölçeği küçüktür; salınım kuyruk-servo manevrasıdır, gerçek yanal sapma < 0.16 m.*
+
+<img src="docs/figures/navigation/navigation_straight_error_speed.png" width="900">
+
+*UKF 3B konum hatası zaman geçmişi ve toplam hız büyüklüğü (GT vs UKF).*
+
+### Results — Resilience (DVL gecikme/kesinti)
+| UKF dalı | 3B konum RMSE | Maks. hata |
 |---|---:|---:|
-| Konum RMSE | 0.824 m | korumalı/ham karşılaştırması |
-| Derinlik RMSE | 0.051 m | — |
-| Maks. cross-track | 0.158 m | — |
-| Yaw RMSE | 1.51° | — |
-| Sonuç | temiz tamamlandı | `[COMPLETE]`, dropped=0 |
+| Saf robot_localization | **1.106 m** | 3.65 m |
+| Sağlık denetimli | 1.106 m | — |
+| OOSM etkin | 1.325 m | 4.51 m |
 
-> *(Metrikler test analiz manifestlerinden; ham rosbag/CSV bu bundle'da değil.)*
+- `navigation_valid` oranı: **1.0** · `degraded` oranı: **0.308** → DVL kesintileri *degraded* olarak yönetildi, navigasyon hiç geçersiz olmadı.
+- OOSM/saf RMSE oranı **1.198** (> 1.05 eşik) → bu koşumda OOSM doğruluk **kazandırmadı**.
+
+<img src="docs/figures/navigation/navigation_resilience_position_error.png" width="820">
+
+*Saf / sağlık-denetimli / OOSM UKF dallarının GT'ye göre 3B konum hatası.*
+
+<img src="docs/figures/navigation/navigation_resilience_status.png" width="820">
+
+*Navigasyon sağlık durumu: DVL kesintilerinde sistem `degraded`'a geçti ama `navigation_valid` korundu; `failsafe` hiç gerekmedi.*
 
 ### Decision
-**PASS** — düz hat kontrol zinciri kararlı; resilience testi DVL bozulması altında temiz tamamlandı.
+- **Straight Line → PASS** — UKF kestirimi gerçek harekete çok yakın (derinlik RMSE mm seviyesi, cross-track < 0.16 m).
+- **Resilience → KISMİ** — Sağlık denetimi/`degraded` yönetimi **çalışıyor** (valid oranı 1.0, failsafe gerekmedi); ancak **OOSM doğruluk kazanımı bu koşumda gösterilemedi** (RMSE oranı 1.20). OOSM dalı doğruluk iyileştirmesi olarak raporlanmamalıdır.
 
 ---
 
 ## Guidance Validation
 
-Ayrıntı: [tests/03_guidance_los.md](tests/03_guidance_los.md) ·
-[tests/04_guidance_waypoint.md](tests/04_guidance_waypoint.md) ·
 Wiki: [docs/wiki/guidance_validation.md](docs/wiki/guidance_validation.md)
 
 ### Purpose
-LOS güdümünün rota eksenini yakalamasını ve çoklu-waypoint rotasının kabul yarıçapı içinde
+LOS güdümünün rota eksenini yakalamasını ve çoklu-waypoint rotasının kabul yarıçapı (1.5 m) içinde
 tamamlanmasını doğrulamak.
 
 ### Methodology
-LOS: 1 waypoint, 5 m başlangıç sapması, lookahead 5 m. Waypoint: 4 waypoint, kabul 1.5 m.
+LOS: 1 hedef, ~5 m başlangıç yanal sapması. Waypoint: 4 waypoint, kabul yarıçapı 1.5 m. Cross-track,
+takımın `analyze_guidance_validation.py` referans-ekseni matematiği ile hesaplanır.
 
-### Inputs
-`guidance_node` (LOS/Waypoint), `control_setpoint_node`, UKF state.
-
-### Results
+### Results (gerçek telemetriden)
 | Metrik | LOS | Waypoint |
 |---|---:|---:|
-| Başlangıç → son cross-track | −4.97 m → 0.0013 m | — |
-| Cross-track azalma | %99.97 | — |
-| Cross-track RMSE | 2.16 m | 0.580 m |
-| Son waypoint mesafesi | 4.62 m | 2.54 m |
+| Güdüm kararı | **KABUL** | **KABUL** |
+| Waypoint sayısı | 1 | 4 |
+| Başlangıç → son cross-track | −4.97 m → **0.0013 m** | 0.0 m → 1.15 m |
+| Cross-track RMSE | 2.158 m | **0.580 m** |
+| Maks. cross-track | 4.97 m | 1.18 m |
+| Heading RMSE | 3.64° | 5.42° |
+| Son hedef mesafesi | 4.61 m | 2.54 m |
+
+<img src="docs/figures/guidance/guidance_los_path_tracking.png" width="780">
+
+*LOS: araç başlangıçtaki ~5 m yanal sapmadan rota eksenine yakınsıyor (son yanal hata ≈ 0.001 m).*
+
+<img src="docs/figures/guidance/guidance_los_error_history.png" width="820">
+
+*LOS cross-track ve heading/mesafe hata zaman geçmişi.*
+
+<img src="docs/figures/guidance/guidance_waypoint_path_tracking.png" width="780">
+
+*Waypoint: 4 hedef (kabul yarıçapı 1.5 m halkalarla) — rota baştan sona takip edildi.*
+
+<img src="docs/figures/guidance/guidance_waypoint_error_history.png" width="820">
+
+*Waypoint cross-track (RMSE 0.580 m) ve heading/mesafe hata geçmişi.*
 
 ### Decision
-**PASS** — LOS rota eksenine yakınsadı (%99.97 azalma); 4-waypoint rotası tamamlandı.
+**PASS** — LOS rota eksenine yakınsadı (yanal hata −4.97 m → 0.001 m); 4-waypoint rotası kabul yarıçapı
+ölçütünü sağlayarak tamamlandı (cross-track RMSE 0.58 m).
 
 ---
 
 ## Controller Validation
 
-Ayrıntı: [tests/02_controller_tracking.md](tests/02_controller_tracking.md) ·
 Wiki: [docs/wiki/controller_validation.md](docs/wiki/controller_validation.md)
 
 ### Purpose
-Hız (0.8 m/s) ve derinlik (2 m) referanslarında setpoint/velocity kontrolcülerinin takip
-başarımını ölçmek.
+Hız (0.8 m/s) ve derinlik (2 m) referanslarında kontrol zincirinin gerçekleşen hareketini ve UKF
+kestirim doğruluğunu ölçmek.
 
 ### Methodology
-`control_backend:=ros`, 55 s, mesafe 35 m, derinlik 2 m, hedef hız 0.8 m/s.
+`control_backend:=ros`, mesafe 35 m, derinlik 2 m, hedef hız 0.8 m/s. Mevcut analiz aracı öncelikle
+GT↔UKF doğruluğunu ve aracın gerçekleşen hareketini raporlar.
 
-### Inputs
-`control_setpoint_node`, `velocity_controller`, UKF state.
-
-### Results
+### Results (gerçek telemetriden)
 | Metrik | Değer |
 |---|---:|
-| Konum RMSE | 0.200 m |
-| Derinlik RMSE | 0.0011 m |
-| Yaw RMSE | 0.011° |
-| Roll / Pitch RMSE | 0.006° / 0.005° |
+| 3B konum RMSE | 0.201 m |
+| Derinlik RMSE | 0.0012 m |
+| Yaw RMSE | 0.022° |
+| Hız RMSE | 0.150 m/s |
+| İz boyu mesafe | 36.26 m |
+| Maks. cross-track | 6.59 m |
 
-> Büyük cross-track (6.59 m) komutla yapılan manevradan kaynaklanır; bu test referans takibini
-> ölçer, cross-track'i değil.
+<img src="docs/figures/controller/controller_tracking_trajectory_depth.png" width="900">
+
+*Kontrolcü: GT vs UKF yatay rota ve derinlik takibi (derinlik RMSE 0.0012 m).*
+
+<img src="docs/figures/controller/controller_tracking_error_speed.png" width="900">
+
+*UKF 3B konum hatası ve toplam hız büyüklüğü; hedef ~0.8 m/s seyir hızı korunmuş.*
 
 ### Decision
-**PASS** — derinlik/tutum hataları milimetre/yüzde-derece seviyesinde.
+**PASS** — derinlik/yaw kestirim hataları mm/yüzde-derece seviyesinde, seyir hızı korunuyor. Görece
+büyük cross-track (6.59 m) **komutla yapılan manevradan** kaynaklanır; bu test referans takibi/UKF
+doğruluğunu ölçer, yanal sapmayı değil.
+
+---
+
+## Sensor Health Validation
+
+Wiki: [docs/wiki/sensor_health_validation.md](docs/wiki/sensor_health_validation.md)
+
+### Purpose
+IMU, DVL, basınç, batarya ve navigation status topic'lerinin gerçek koşumda minimum yayın frekanslarını
+sağladığını doğrulamak.
+
+### Results (gerçek telemetriden)
+| Metrik | Değer |
+|---|---:|
+| navigation_valid oranı | 1.0 |
+| IMU / DVL / basınç OK oranı | 1.0 / 1.0 / 1.0 |
+| Minimum topic-rate oranı | 2.256 |
+| Tüm topic sonuçları | KABUL |
+
+<img src="docs/figures/sensor/sensor_topic_rates.png" width="820">
+
+*Sensor health: izlenen topic yayın frekansları minimum eşiklerin üzerinde kaldı.*
+
+### Decision
+**PASS** — tüm izlenen topic'ler minimum frekans eşiğinin üzerinde; sensör veri sürekliliği sağlandı.
 
 ---
 
 ## Mission FSM Validation
 
-Ayrıntı: [tests/08_stage1_fsm.md](tests/08_stage1_fsm.md) ·
 Wiki: [docs/wiki/mission_fsm_validation.md](docs/wiki/mission_fsm_validation.md)
 
 ### Purpose
-Yarışma Aşama-1 görevini sonlu durum makinesi (FSM) ile uçtan uca koşturmak.
+Yarışma Aşama-1 görevini (kaydet → dal → 10 m ön-seyir → 50 m zamanlı koşu → dönüş → bitiş çizgisi →
+gücü kes) sonlu durum makinesi (FSM) ile uçtan uca koşturmak.
 
 ### Methodology
-`control_backend:=ros`, 240 s'ye kadar, tam görev düğüm yığını.
+`control_backend:=ros`, tam görev düğüm yığını. Faz dizisi `/auv/mission/status`'tan, bitiş-çizgisi
+ölçütü `analyze_report_bag.py` stage1 mantığından (`|along−10|≤2 m` ve `|cross|≤3 m`).
 
-### Inputs
-`mission_manager_node` (FSM), guidance, kontrolcüler, failsafe, ocean current, UKF.
-
-### Results
+### Results (gerçek telemetriden)
 | Metrik | Değer |
 |---|---:|
-| İz boyu mesafe | 73.84 m |
-| Konum RMSE | 1.34 m |
-| Derinlik RMSE | 0.075 m |
-| Yaw RMSE | 3.38° |
+| İz boyu maks. mesafe (along) | **73.84 m** (dışa 50 m + dönüş yayı) |
+| 3B konum RMSE (UKF) | 0.034 m |
+| Derinlik RMSE | 0.0015 m |
+| Bitiş çizgisi boyuna hatası | 1.72 m ✓ (≤ 2 m) |
+| Bitiş çizgisi **yanal** hatası | **32.54 m** ✗ (≤ 3 m sağlanmadı) |
+| Dışa 50 m geçerli | **Evet** |
+| FSM faz dizisi | IDLE → SAVE_START_POINT → DIVE_TO_DEPTH → PRE_CRUISE_10M → START_TIMED_RUN → OUTBOUND_CRUISE_50M → TURN_AROUND → RETURN_TO_FINISH_LINE → CUT_POWER → COMPLETE |
 
-> Maks. cross-track 32.6 m, görevin çoklu manevra geometrisinden kaynaklanır (hata değil).
+<img src="docs/figures/fsm/stage1_fsm_mission_profile.png" width="900">
+
+*Aşama-1 görev profili: araç along-track 74 m'ye çıkıp dönüyor; ancak dönüş manevrası ~32 m yanal
+sapma yaratıyor — bitiş çizgisine boyuna yakın (1.7 m) ama yanal olarak uzak (32.5 m) tamamlanıyor.*
+
+<img src="docs/figures/fsm/stage1_fsm_trajectory_depth.png" width="900">
+
+*Aşama-1 GT vs UKF rota ve derinlik takibi (UKF doğruluğu çok yüksek: konum RMSE 0.034 m).*
 
 ### Decision
-**PASS** — görev FSM'i baştan sona kesintisiz yürüdü.
+**KISMİ** — FSM'in **10 fazlık tam dizisi sırayla yürüdü** ve dışa 50 m koşusu geçerli; UKF kestirimi
+mükemmele yakın. Ancak `TURN_AROUND` manevrası geniş yarıçaplı olduğundan araç bitiş çizgisine **32.5 m
+yanal sapma** ile döndü → bitiş-çizgisi yanal kabul ölçütü (≤ 3 m) **sağlanmadı**. Dönüş geometrisi /
+guidance ayarı bir sonraki iyileştirme adımıdır.
 
 ---
 
 ## Fire Behavior Tree Validation
 
-Ayrıntı: [tests/09_stage2_bt.md](tests/09_stage2_bt.md) ·
 Wiki: [docs/wiki/fire_behavior_tree_validation.md](docs/wiki/fire_behavior_tree_validation.md)
 
 ### Purpose
-Aşama-2 görevini (yaklaşım → pitch-up → güvenli ateşleme → roket ayrılması) Davranış Ağacı (BT)
-ile koşturmak ve modüler görev kurgusunun çalıştığını doğrulamak.
+Aşama-2 görevini (yaklaşım → dalış/pitch → ateşleme izni → roket ayrılması) Davranış Ağacı (BT) ile
+koşturmak; modüler görev kurgusu ve ateşleme durum makinesini gözlemlemek.
 
 ### Methodology
-`control_backend:=ros`, 100 s'ye kadar, tam görev düğüm yığını.
+`control_backend:=ros`, tam görev düğüm yığını. Dalış ölçütü `pitch ≤ −30°`; ateşleme durumu
+`/auv/fire/status` (state / actuator_command / fired).
 
-### Inputs
-`mission_manager_node` (Aşama-2 BT), `safety_monitor_node` (fire inhibit), kontrolcüler, UKF.
-
-### Results
+### Results (gerçek telemetriden)
 | Metrik | Değer |
 |---|---:|
-| İz boyu mesafe | 42.73 m |
-| Konum RMSE | 0.722 m |
-| Maks. cross-track | 0.43 m |
-| Maks. pitch (GT) | 29.09° (dalış/çıkış manevrası) |
+| İz boyu mesafe | 43.21 m |
+| 3B konum RMSE (UKF) | 0.033 m |
+| Maks. cross-track | **0.478 m** |
+| Min. pitch (GT) | **−29.10°** (−30° eşiğinin hemen altında) |
+| Ateşleme durumu | `IDLE` (actuator_command=False, fired=False) |
+
+<img src="docs/figures/behavior_tree/stage2_bt_pitch_fire.png" width="900">
+
+*Aşama-2: dalış (pitch) profili −29.1°'ye ulaşıyor (−30° eşiğine çok yakın); ateşleme durum makinesi
+bu koşumda `IDLE`'da kaldı — ateşleme izni verilmedi.*
+
+<img src="docs/figures/behavior_tree/stage2_bt_trajectory_depth.png" width="900">
+
+*Aşama-2 GT vs UKF rota ve derinlik takibi; düşük cross-track (0.48 m).*
 
 ### Decision
-**PASS (görev yürütme)** — BT görevi düşük cross-track (0.43 m) ile tamamlandı.
-**Needs Evidence (ateşleme karar mantığı):** Ateşleme inhibit/permit kararı mimaride
-`safety_monitor_node` üzerinde tanımlıdır, ancak bu bundle'da **izole bir ateşleme-karar testi
-ve kanıt dosyası yoktur**. Ateşleme mantığının ayrı doğrulanması bir sonraki adımdır.
+- **Görev yürütme → KISMİ** — BT görevi düşük yanal sapma (0.48 m) ve yüksek UKF doğruluğu ile yürüdü;
+  dalış manevrası −30° hedefine çok yaklaştı (−29.1°) ama eşiği tam geçmedi.
+- **Ateşleme karar mantığı → Needs Evidence** — bu koşumda ateşleme durumu `IDLE`'da kaldı (izin
+  verilmedi, aktüatör komutu yok). İzin/inhibit mantığının izole, kanıtlı bir testi henüz yoktur.
 
 ---
 
 ## Ocean Current Validation
 
-Ayrıntı: [tests/07_ocean_current_services.md](tests/07_ocean_current_services.md) ·
 Wiki: [docs/wiki/ocean_current_validation.md](docs/wiki/ocean_current_validation.md)
 
 ### Purpose
-RL/dayanıklılık senaryolarının dayandığı okyanus akıntısı servislerinin çağrılara doğru yanıt
-verdiğini doğrulamak.
+RL/dayanıklılık senaryolarının dayandığı okyanus akıntısı servislerinin belirleyici (deterministic)
+şekilde akıntı vektörü yayınladığını doğrulamak.
 
 ### Methodology
-8 servise programatik çağrı; ölçülen akıntı zaman serisi ile karşılaştırma.
+Akıntı servisleri programatik çağrılır; `/ocean_current` zaman serisi kaydedilir ve özetlenir.
 
-### Inputs
-`ocean_current_node`, `ocean_current_service_timeseries.csv`.
+### Results (gerçek telemetriden)
+| Metrik | Değer |
+|---|---:|
+| Akıntı örnek sayısı | 871 |
+| Ortalama X / Y / Z | 0.336 / 0.050 / 0.006 m/s |
+| Maks. büyüklük | 0.557 m/s |
 
-### Results
-8/8 servis yanıt verdi. Hedef `(0.4, 0.2, 0.0)` m/s; ölçülen ort. X≈0.34, Y≈0.05 m/s, anlık maks.
-büyüklük 0.557 m/s.
+<img src="docs/figures/ocean_current/ocean_current_service_activity.png" width="820">
 
-<img src="figures/ocean_current_service_activity.png" width="780">
-
-> Bu grafik orijinalde 0 bayt geldiği için kayıtlı CSV'den **yeniden üretilmiştir** (4 panel).
+*Okyanus akıntı servisi: yayınlanan X/Y/Z bileşenleri ve toplam büyüklük zaman serisi.*
 
 ### Decision
-**PASS** — sekiz servis çalışıyor; ölçülen akıntı komutlarla tutarlı.
+**PASS** — akıntı servisleri belirleyici şekilde yayın yaptı; ölçülen akıntı vektörü senaryo
+beklentisiyle tutarlı.
 
 ---
 
 ## RL Policy Validation
 
-Ayrıntı: [tests/10_rl_policy.md](tests/10_rl_policy.md) ·
 Wiki: [docs/wiki/rl_policy_validation.md](docs/wiki/rl_policy_validation.md) ·
 Teşhis: [docs/wiki/rl_ukf_diagnosis.md](docs/wiki/rl_ukf_diagnosis.md)
 
 > **This section validates a policy candidate / RL-style control candidate under multiple current
-> scenarios. It should not be presented as a fully trained SAC agent unless the corresponding
-> training checkpoints, training curves, and evaluation protocol are included.**
+> scenarios. It should not be presented as a fully trained SAC agent unless the corresponding training
+> checkpoints, training curves, and evaluation protocol are included.**
 >
-> Bu bölüm, eğitilmiş bir SAC ajanı kesinliğiyle değil; farklı akıntı senaryolarında test edilen
-> bir **policy candidate** doğrulaması olarak değerlendirilmelidir. Bu depoda eğitim checkpoint'i,
-> ödül/öğrenme eğrisi ve değerlendirme protokolü **bulunmamaktadır** — bu nedenle "trained RL agent"
-> ifadesi kullanılmamıştır.
+> Bu bölüm, eğitilmiş bir SAC ajanı kesinliğiyle değil; farklı akıntı senaryolarında test edilen bir
+> **policy candidate** doğrulaması olarak değerlendirilmelidir. Depoda eğitim checkpoint'i, ödül/öğrenme
+> eğrisi ve değerlendirme protokolü **yoktur** — bu nedenle "trained RL agent" ifadesi kullanılmamıştır.
 
 ### Purpose
-Seçilen politika adayının, tam ROS/Gazebo zinciri (UKF + guidance + kontrolcü) üzerinde 6 farklı
-akıntı senaryosunda hedefe ilerleyip ilerlemediğini ölçmek; ve ilk RL metriklerindeki yüksek UKF
-RMSE değerinin kök nedenini denetlemek.
+Seçilen politika adayının tam ROS/Gazebo zincirinde (UKF + guidance + kontrolcü) 6 akıntı senaryosunda
+hedefe ilerleyip ilerlemediğini ölçmek; ve ilk RL metriklerindeki yüksek UKF RMSE değerinin kök nedenini
+denetlemek.
 
 ### Methodology
-6 senaryoluk episode matrisi (`no_current` … `hard_cross_current`). UKF–GT konum hatası hem **raw**
-hem **başlangıç-hizalı (aligned)** olarak ham `recording/telemetry.csv` kayıtlarından **bu depodaki
-ROS-bağımsız script ile bağımsız** yeniden hesaplanmıştır
-([scripts/recompute_rl_ukf_from_telemetry.py](scripts/recompute_rl_ukf_from_telemetry.py)). Figürler
-[scripts/generate_rl_figures.py](scripts/generate_rl_figures.py) ile üretilir.
-
-### Inputs
-- [data/episodes/sara_best_episode.csv](data/episodes/sara_best_episode.csv) — tek episode (calm), 34 kolon, 662 adım.
-- [docs/diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv](docs/diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv)
-- [docs/diagnostics/rl_ukf/recomputed_rl_ukf_from_telemetry_verification.csv](docs/diagnostics/rl_ukf/recomputed_rl_ukf_from_telemetry_verification.csv) — bağımsız doğrulama.
-- Ham `final_validation/results/*/recording/telemetry.csv` (harici, repoda değil).
+6 senaryoluk episode matrisi (`no_current` … `hard_cross_current`). UKF–GT konum hatası hem **raw** hem
+**başlangıç-hizalı (aligned)** olarak ham `recording/telemetry.csv`'den
+[scripts/recompute_rl_ukf_from_telemetry.py](scripts/recompute_rl_ukf_from_telemetry.py) ile **bağımsız**
+yeniden hesaplanmıştır. Figürler [scripts/generate_rl_figures.py](scripts/generate_rl_figures.py) ile üretilir.
 
 ### Results
-
-**Düzeltilmiş UKF–GT RMSE (ham telemetriden, başlangıç hizalı) ve kabul belirleyici derinlik RMSE:**
-
-| Senaryo | Eski (buggy) | Raw RMSE | Aligned RMSE | Progress | Cross-track RMSE | Depth RMSE | nav_valid |
+| Senaryo | Eski (buggy) | Raw RMSE | **Aligned RMSE** | Progress | Cross-track RMSE | Depth RMSE | nav_valid |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | no_current | 30.34 m | 3.86 m | **0.73 m** | 50.12 m | 0.54 m | 1.10 m | 1.0 |
 | following_current | 36.98 m | 4.13 m | **0.16 m** | 56.82 m | 0.42 m | 1.09 m | 1.0 |
@@ -367,23 +437,17 @@ ROS-bağımsız script ile bağımsız** yeniden hesaplanmıştır
 <img src="docs/figures/rl/rl_current_robustness.png" width="700">
 <img src="docs/figures/rl/rl_trajectory_overlay.png" width="780">
 
-> **UKF kök neden (koddan + telemetriden doğrulandı):** İlk RL metriklerindeki ~30–46 m UKF konum
-> RMSE, exporter (`rl_policy_validation.py`) içindeki bir **zaman-tabanı uyuşmazlığından**
-> kaynaklanır: `ukf` DataFrame'i başlangıç-zamanı normalizasyonundan önce kopyalanır ve normalize
-> edilmez; `merge_asof(nearest)` bu yüzden tüm UKF değerlerini **ilk örneğe sabitler** (donmuş kolon,
-> span≈0). Üretilmiş gerçek `rl_policy_timeseries.csv`'de `x_ukf` span = 0 iken ham `/odometry/ukf`
-> 50–81 m ilerler. Bağımsız yeniden hesapta **başlangıç-hizalı** UKF-GT RMSE **0.09–0.73 m** çıkar —
-> diğer testlerle tutarlı. Hata düzeltildi (tek satır):
-> [rl_policy_validation_fixed.py](docs/diagnostics/rl_ukf/rl_policy_validation_fixed.py). Eski hatalı
-> değerler [legacy/](docs/diagnostics/rl_ukf/legacy/) altında "old analysis artifact" olarak
-> etiketlenmiştir. Tam teşhis: [RL UKF Diagnosis](#rl-ukf-diagnosis).
+> **UKF kök neden (kod + telemetri ile doğrulandı):** İlk RL metriklerindeki ~30–46 m UKF RMSE, exporter
+> `rl_policy_validation.py` içindeki zaman-tabanı uyuşmazlığından kaynaklanır: `ukf` DataFrame'i başlangıç
+> normalizasyonundan önce kopyalanıp normalize edilmediği için `merge_asof(nearest)` tüm UKF değerlerini
+> **ilk örneğe sabitler** (donmuş kolon). Bağımsız yeniden hesapta **başlangıç-hizalı** UKF-GT RMSE
+> **0.09–0.73 m** çıkar. Tam teşhis: [RL UKF Diagnosis](#rl-ukf-diagnosis).
 
 ### Decision
 **WIP** — Zincir 6 senaryoda da çalıştı (`nav_valid_ratio = 1.0`). Ancak aday politikanın gerçek kabul
-kriteri (`progress ≥ 0.90·hedef` **ve** `derinlik RMSE ≤ 0.35 m` **ve** `hız ≤ 2.5 m/s` **ve**
-`nav_valid ≥ 0.95`) hiçbir senaryoda sağlanmadı: derinlik RMSE 0.79–1.68 m (> 0.35 m). Bu, UKF
-artefaktından **bağımsız**, aday politikanın gerçek bir derinlik-takip sonucudur. Sonuç **zincirin
-değil, aday politikanın** durumudur.
+ölçütü (progress + **derinlik RMSE ≤ 0.35 m** + hız + nav_valid) hiçbir senaryoda sağlanmadı: derinlik
+RMSE 0.79–1.68 m (> 0.35 m). Bu, UKF artefaktından **bağımsız**, aday politikanın gerçek derinlik-takip
+sonucudur. Sonuç **zincirin değil, aday politikanın** durumudur.
 
 ---
 
@@ -406,79 +470,100 @@ Tam teşhis: [docs/wiki/rl_ukf_diagnosis.md](docs/wiki/rl_ukf_diagnosis.md)
 
 ## Results Summary
 
-| Katman | Test | Durum | Anahtar sonuç |
+| Katman | Test | Durum | Anahtar sonuç (gerçek telemetriden) |
 |---|---|:---:|---|
-| Navigation | Straight | PASS | cross-track 0.158 m, derinlik RMSE 0.051 m |
-| Navigation | Resilience | PASS | DVL gecikme+kesinti altında `[COMPLETE]` |
-| Guidance | LOS | PASS | cross-track %99.97 azaldı |
-| Guidance | Waypoint | PASS | cross-track RMSE 0.580 m |
-| Controller | Tracking | PASS | derinlik RMSE 0.0011 m, yaw RMSE 0.011° |
-| Sensor | Health | PASS | tüm sağlık oranları 1.0 |
-| FSM | Stage 1 | PASS | 73.8 m iz, kesintisiz |
-| BT | Stage 2 | PASS | cross-track 0.43 m |
-| BT | Fire decision | Needs Evidence | izole ateşleme-karar testi yok |
-| Ocean Current | Services | PASS | 8/8 servis |
-| RL | Policy candidate | WIP | aligned UKF RMSE 0.09–0.73 m (düzeltildi); derinlik RMSE 0.79–1.68 m > 0.35 m eşiği → aday eşik altı |
+| Navigation | Straight | **PASS** | 3B RMSE 0.217 m · derinlik RMSE 0.0012 m · cross-track 0.158 m |
+| Navigation | Resilience | **KISMİ** | valid oranı 1.0, degraded 0.31 (sağlık yönetimi OK); OOSM/saf RMSE 1.20 → doğruluk kazanımı yok |
+| Guidance | LOS | **PASS** | cross-track −4.97 m → 0.001 m (yakınsadı) |
+| Guidance | Waypoint | **PASS** | cross-track RMSE 0.580 m · 4 waypoint kabul |
+| Controller | Tracking | **PASS** | derinlik RMSE 0.0012 m · yaw RMSE 0.022° |
+| Sensor | Health | **PASS** | tüm sağlık oranları 1.0 · tüm topic'ler frekans sınırı üstünde |
+| FSM | Stage 1 | **KISMİ** | 10 faz dizisi + 50 m koşu OK; bitiş çizgisi yanal 32.5 m (> 3 m) |
+| BT | Stage 2 | **KISMİ** | dalış −29.1° (≈ −30°), cross-track 0.48 m; ateşleme `IDLE` |
+| BT | Fire decision | **Needs Evidence** | izole ateşleme-karar testi yok |
+| Ocean Current | Services | **PASS** | akıntı servisleri belirleyici yayın · maks 0.557 m/s |
+| RL | Policy candidate | **WIP** | aligned UKF RMSE 0.09–0.73 m (düzeltildi); derinlik RMSE 0.79–1.68 m > 0.35 m → aday eşik altı |
 
 ---
 
-## Raw Data
+## Core Code / Test Entry Points
+
+Takımın gerçek doğrulama/analiz kodu [src/validation/](src/validation/) altındadır (provenance:
+final_validation arşivi). Detay: [src/validation/README.md](src/validation/README.md).
+
+| Bileşen | Giriş noktası | Açıklama |
+|---|---|---|
+| Final test orkestrasyonu | [src/validation/run_final_validation.py](src/validation/run_final_validation.py) | Tüm testleri Gazebo'da izole koşturur; parametreler burada |
+| Tek senaryo koşucu | [src/validation/report_test_runner.py](src/validation/report_test_runner.py) | ROS 2 üzerinde tek `--case` koşar ve kaydeder |
+| Navigation/FSM/BT analizi | [src/validation/analyze_report_bag.py](src/validation/analyze_report_bag.py) | GT↔UKF doğruluk metrikleri + stage1/stage2 ölçütleri |
+| Guidance analizi | [src/validation/analyze_guidance_validation.py](src/validation/analyze_guidance_validation.py) | LOS/Waypoint cross-track, heading |
+| Resilience analizi | [src/validation/analyze_navigation_resilience.py](src/validation/analyze_navigation_resilience.py) | saf/korumalı/OOSM UKF + sağlık |
+| Sensör/akıntı analizi | [src/validation/analyze_environment_validation.py](src/validation/analyze_environment_validation.py) | sensor_health + ocean_current |
+| Yarışma görev sürücüsü | [src/validation/competition_mission_runner.py](src/validation/competition_mission_runner.py) | Aşama-1/2 FSM+BT görev akışı |
+| RL policy analizi | [src/validation/rl_policy_validation.py](src/validation/rl_policy_validation.py) | RL aday politika (UKF zaman-tabanı hatası içerir; bkz. diagnosis) |
+
+**Yardımcı (Claude-üretimi) scriptler** — `scripts/`: figür yeniden üretimi
+([generate_validation_figures.py](scripts/generate_validation_figures.py),
+[generate_rl_figures.py](scripts/generate_rl_figures.py)), ROS-bağımsız UKF recompute
+([recompute_rl_ukf_from_telemetry.py](scripts/recompute_rl_ukf_from_telemetry.py)) ve teslim denetimi
+([verify_validation_artifacts.py](scripts/verify_validation_artifacts.py)).
+
+---
+
+## Raw Data and Logs
 
 Ayrıntılı indeks: [docs/wiki/raw_data_index.md](docs/wiki/raw_data_index.md)
 
-| Veri | Yol | Bu bundle'da? |
+| Veri | Yol | Repoda? |
 |---|---|:---:|
+| Yeniden üretilmiş test özet metrikleri (9 test) | [docs/metrics/](docs/metrics/) | ✓ |
+| Yeniden üretilmiş test figürleri | [docs/figures/](docs/figures/) | ✓ |
 | En iyi episode (34 kolon, 662 adım) | [data/episodes/sara_best_episode.csv](data/episodes/sara_best_episode.csv) | ✓ |
-| Düzeltilmiş RL UKF özeti | [docs/diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv](docs/diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv) | ✓ |
-| UKF span-check (donmuş-kolon kanıtı) | [docs/diagnostics/rl_ukf/metrics_vs_raw_telemetry_ukf_span_check.csv](docs/diagnostics/rl_ukf/metrics_vs_raw_telemetry_ukf_span_check.csv) | ✓ |
-| RL UKF bağımsız doğrulama | [docs/diagnostics/rl_ukf/recomputed_rl_ukf_from_telemetry_verification.csv](docs/diagnostics/rl_ukf/recomputed_rl_ukf_from_telemetry_verification.csv) | ✓ |
-| Hatalı + düzeltilmiş exporter | [docs/diagnostics/rl_ukf/legacy/](docs/diagnostics/rl_ukf/legacy/) · [rl_policy_validation_fixed.py](docs/diagnostics/rl_ukf/rl_policy_validation_fixed.py) | ✓ |
+| Düzeltilmiş RL UKF özeti + span-check + bağımsız doğrulama | [docs/diagnostics/rl_ukf/](docs/diagnostics/rl_ukf/) | ✓ |
+| Hatalı + düzeltilmiş RL exporter | [docs/diagnostics/rl_ukf/legacy/](docs/diagnostics/rl_ukf/legacy/) · [fixed](docs/diagnostics/rl_ukf/rl_policy_validation_fixed.py) | ✓ |
 | Mimari düğüm/bağlantı CSV'leri | [docs/architecture/](docs/architecture/) | ✓ |
-| Görev raporu (HTML) | [reports/sara_mission_report.html](reports/sara_mission_report.html) | ✓ |
-| Episode özet/görsel | [reports/sara_best_episode.png](reports/sara_best_episode.png) · [reports/sara_episode_summary.png](reports/sara_episode_summary.png) | ✓ |
-| Görev videosu | [reports/sara_mission_video.mp4](reports/sara_mission_video.mp4) | ✓ |
-| Per-test ham rosbag (.db3) / büyük telemetry.csv | `final_validation` arşivi | ✗ büyük/ham — repoya alınmaz |
+| Görev raporu (HTML) + episode görselleri + video | [reports/](reports/) | ✓ |
+| Takımın gerçek doğrulama kodu | [src/validation/](src/validation/) | ✓ |
+| Per-test ham `recording/telemetry.csv` (~235 MB) ve `.db3` | final_validation arşivi | ✗ büyük/ham — repoya alınmaz |
+
+> **Loglar:** Takımın koşum loglarının özeti, her testin metrik `summary.csv/json` dosyalarına
+> ([docs/metrics/](docs/metrics/)) sığdırılmıştır (test adı, süre, örnek sayısı, kabul ölçütü sonucu).
+> Büyük ham ROS logları (`*.log`) `.gitignore` ile dışarıda tutulur.
 
 ---
 
 ## Reproducibility
 
 ```bash
-# 1) Doğrulama artefaktlarını denetle (linkler, CSV şeması, metrikler, tutarlılık)
+# 1) Teslim denetimi (linkler, gömülü figürler, CSV şeması, mimari tutarlılık)
 python scripts/verify_validation_artifacts.py
 
-# 2) RL UKF RMSE'yi ham telemetriden bağımsız yeniden hesapla (harici results klasörü gerekir)
+# 2) Test figür + metriklerini ham telemetriden yeniden üret (harici results klasörü gerekir)
+python scripts/generate_validation_figures.py --results <final_validation/results>
+
+# 3) RL UKF RMSE'yi ham telemetriden bağımsız yeniden hesapla
 python scripts/recompute_rl_ukf_from_telemetry.py <final_validation/results> --out out.csv
 
-# 3) RL figürlerini üret (trajectory overlay için opsiyonel --results)
+# 4) RL figürlerini üret
 python scripts/generate_rl_figures.py [--results <final_validation/results>]
-
-# 4) SARA RL/sim deneylerini yeniden koştur (deterministik: seed=42, 16 episode)
-#    not: notebook sara_sedaa.py ve sara_best_episode.csv'yi çalışma dizininde bekler
-jupyter notebook notebooks/sara_rl_validation.ipynb
-#    veya doğrudan:  python sim/sara_sedaa.py
 ```
 
-> `data/episodes/sara_best_episode.csv` üzerinde doğrulanan değerler: final x = 50.037 m,
-> derinlik z = 1.984 m, cross-track y = 0.029 m, energy = 7.274 Wh, toplam reward = 932.45,
-> `done=True`, `truncated=False`, kütle = 15.85 kg (sim `sara_sedaa.py:74`).
+> `data/episodes/sara_best_episode.csv` üzerinde doğrulanan değerler: final x = 50.037 m, derinlik
+> z = 1.984 m, cross-track y = 0.029 m, energy = 7.274 Wh, toplam reward = 932.45, `done=True`,
+> `truncated=False`, kütle = 15.85 kg (`sim/sara_sedaa.py:74`).
 
 ---
 
 ## Known Limitations
 
-1. **Ham per-test rosbag/büyük telemetry bu bundle'da yok** (boyut). Navigation/Guidance/Controller/
-   FSM/BT/Sensor metrikleri `final_validation` analiz çıktılarından taşınmıştır; özet PNG/CSV jüri için
-   yeterlidir, ham `.db3`/büyük `telemetry.csv` repoya alınmaz.
-2. **RL kök neden tamamen çözüldü.** Donmuş-UKF-kolon hatası exporter kodunda bulundu, düzeltildi
-   ([rl_policy_validation_fixed.py](docs/diagnostics/rl_ukf/rl_policy_validation_fixed.py)) ve sonuç ham
-   telemetriden bağımsız doğrulandı. Düzeltilmiş exporter ROS 2 + `.db3` gerektirdiği için bu ortamda
-   yeniden çalıştırılmadı; ROS-bağımsız recompute ile doğrulandı.
-3. **RL ≠ eğitilmiş SAC.** Checkpoint/öğrenme eğrisi/değerlendirme protokolü yok → policy candidate.
-4. **Ateşleme karar mantığı izole test edilmedi** (mimaride tanımlı, ayrı kanıt yok).
-5. **ArduPilot kontrol arka ucu** performans doğrulamasına dahil değil (kalibre edilmedi).
-6. **Kapanış anomalileri** (bazı testlerde SIGINT sırasında segfault/traceback) ölçümleri etkilemez
-   ancak kapanış sırası ileride sağlamlaştırılmalıdır.
+1. **Ham per-test rosbag/büyük telemetry repoda yok** (boyut). Tüm metrikler bu ham telemetriden
+   yeniden üretilebilir; `scripts/generate_validation_figures.py` aynı çıktıyı verir.
+2. **Resilience OOSM** bu koşumda doğruluk kazandırmadı (RMSE oranı 1.20); sağlık/degraded yönetimi çalışıyor.
+3. **Stage 1** bitiş çizgisine yanal 32.5 m sapma ile döndü (dönüş geometrisi iyileştirilmeli); FSM dizisi tam.
+4. **Stage 2** ateşleme durumu `IDLE`'da kaldı; ateşleme izin mantığının izole testi yok (Needs Evidence).
+5. **RL ≠ eğitilmiş SAC.** Checkpoint/öğrenme eğrisi/değerlendirme protokolü yok → policy candidate.
+   UKF kök neden tamamen çözüldü ve düzeltildi.
+6. **ArduPilot kontrol arka ucu** performans doğrulamasına dahil değil (kalibre edilmedi).
 
 ---
 
@@ -486,29 +571,21 @@ jupyter notebook notebooks/sara_rl_validation.ipynb
 
 ```
 zemheri_validation/
-├── README.md                       ← bu dosya (jüri özeti, wiki formatı)
-├── CLAUDE.md                       ← gelecekteki bağlam için depo özeti
+├── README.md                       ← bu dosya (jüri özeti, wiki formatı, gömülü gerçek figürler)
 ├── .gitignore
-├── tests/                          ← 10 test analiz sayfası (01…10)
-├── figures/                        ← yeniden üretilen + örnek doğrulama figürleri
-├── rl_tools/
-│   ├── plot_validation_figures.py  ← genel RL/doğrulama figür üreticisi
-│   └── README_RL.md
+├── src/validation/                 ← TAKIMIN gerçek doğrulama/analiz kodu (+ README provenance)
 ├── docs/
 │   ├── architecture/               ← SARA mimari (png/pdf/drawio + 2 CSV)
-│   ├── diagnostics/rl_ukf/         ← RL UKF teşhisi (MD + CSV'ler + PNG + fixed exporter)
-│   │   └── legacy/                 ← hatalı exporter + eski (kullanılmayan) UKF RMSE değerleri
-│   ├── figures/rl/                 ← üretilen RL figürleri (4 PNG)
-│   └── wiki/                       ← 9 wiki sayfası (katman başına)
-├── data/episodes/
-│   └── sara_best_episode.csv       ← .xls'ten dönüştürüldü (gerçekte CSV)
+│   ├── figures/                    ← gerçek telemetriden YENİDEN ÜRETİLEN figürler
+│   │   ├── navigation/  guidance/  controller/  fsm/  behavior_tree/
+│   │   ├── sensor/      ocean_current/          rl/
+│   ├── metrics/                    ← test başına summary.csv/json (yeniden üretilmiş)
+│   ├── diagnostics/rl_ukf/         ← RL UKF teşhisi (+ legacy buggy/fixed exporter)
+│   └── wiki/                       ← katman başına detay sayfaları (gömülü figürler)
+├── data/episodes/sara_best_episode.csv
 ├── reports/                        ← HTML rapor, episode görselleri, görev videosu
-├── notebooks/
-│   └── sara_rl_validation.ipynb    ← temiz çalışma notebook'u
-├── sim/
-│   └── sara_sedaa.py               ← RL/sim ortamı (Gymnasium-tarzı)
-└── scripts/
-    ├── verify_validation_artifacts.py      ← teslim öncesi tutarlılık denetimi
-    ├── generate_rl_figures.py              ← RL figür üreticisi
-    └── recompute_rl_ukf_from_telemetry.py  ← ROS-bağımsız UKF RMSE yeniden hesabı
+├── notebooks/sara_rl_validation.ipynb
+├── sim/sara_sedaa.py               ← RL/sim ortamı
+├── rl_tools/                       ← yardımcı RL figür üreticisi
+└── scripts/                        ← yeniden-üretim + teslim denetimi scriptleri
 ```

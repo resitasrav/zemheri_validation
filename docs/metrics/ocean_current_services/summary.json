@@ -1,0 +1,9 @@
+{
+  "test": "ocean_current_services",
+  "samples": 871,
+  "mean_x_mps": 0.3360417863785991,
+  "mean_y_mps": 0.05045821927599269,
+  "mean_z_mps": 0.005740261073139919,
+  "max_magnitude_mps": 0.5568349157072433,
+  "decision": "KABUL — akıntı servisi belirleyici şekilde yayın yaptı"
+}

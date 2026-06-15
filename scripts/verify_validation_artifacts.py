@@ -86,6 +86,88 @@ def check_markdown_links():
           f"Kırık link(ler): {broken}")
 
 
+def check_required_embedded_figures():
+    """Critical validation figures must be embedded in the relevant Markdown pages."""
+    required = {
+        "README.md": [
+            "docs/figures/navigation/navigation_straight_trajectory_depth.png",
+            "docs/figures/guidance/guidance_los_path_tracking.png",
+            "docs/figures/guidance/guidance_waypoint_path_tracking.png",
+            "docs/figures/controller/controller_tracking_trajectory_depth.png",
+            "docs/figures/fsm/stage1_fsm_mission_profile.png",
+            "docs/figures/behavior_tree/stage2_bt_pitch_fire.png",
+        ],
+        "docs/wiki/navigation_validation.md": [
+            "../figures/navigation/navigation_straight_trajectory_depth.png",
+            "../figures/navigation/navigation_resilience_position_error.png",
+        ],
+        "docs/wiki/guidance_validation.md": [
+            "../figures/guidance/guidance_los_path_tracking.png",
+            "../figures/guidance/guidance_los_error_history.png",
+            "../figures/guidance/guidance_waypoint_path_tracking.png",
+            "../figures/guidance/guidance_waypoint_error_history.png",
+        ],
+        "docs/wiki/controller_validation.md": [
+            "../figures/controller/controller_tracking_trajectory_depth.png",
+            "../figures/controller/controller_tracking_error_speed.png",
+        ],
+        "docs/wiki/mission_fsm_validation.md": [
+            "../figures/fsm/stage1_fsm_mission_profile.png",
+            "../figures/fsm/stage1_fsm_trajectory_depth.png",
+        ],
+        "docs/wiki/fire_behavior_tree_validation.md": [
+            "../figures/behavior_tree/stage2_bt_pitch_fire.png",
+            "../figures/behavior_tree/stage2_bt_trajectory_depth.png",
+        ],
+        "docs/wiki/sensor_health_validation.md": [
+            "../figures/sensor/sensor_topic_rates.png",
+        ],
+    }
+    missing = []
+    absent_files = []
+    for rel_md, fig_paths in required.items():
+        md = ROOT / rel_md
+        if not md.exists():
+            missing.append(f"{rel_md} YOK")
+            continue
+        text = md.read_text(encoding="utf-8")
+        for fig in fig_paths:
+            if fig not in text:
+                missing.append(f"{rel_md} icinde gomulu degil: {fig}")
+            if not (md.parent / fig).resolve().exists():
+                absent_files.append(f"{rel_md} -> {fig}")
+    check(not missing, "Kritik figurler ilgili MD dosyalarinda gomulu",
+          f"Eksik gomulu figur(ler): {missing}")
+    check(not absent_files, "Gomulu kritik figur dosyalari mevcut",
+          f"Gomulu figur hedefi bulunamadi: {absent_files}")
+
+
+def check_metrics_readable():
+    """All curated docs/metrics CSV and JSON files should be parseable."""
+    metrics = ROOT / "docs" / "metrics"
+    if not check(metrics.exists(), "docs/metrics mevcut", "docs/metrics YOK"):
+        return
+    csv_files = sorted(metrics.rglob("*.csv"))
+    json_files = sorted(metrics.rglob("*.json"))
+    bad = []
+    for path in csv_files:
+        try:
+            with path.open(newline="", encoding="utf-8") as fh:
+                rows = list(csv.reader(fh))
+            if len(rows) < 2:
+                bad.append(f"{path.relative_to(ROOT)} bos/tek satir")
+        except Exception as exc:
+            bad.append(f"{path.relative_to(ROOT)} okunamadi: {exc}")
+    for path in json_files:
+        try:
+            json.loads(path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            bad.append(f"{path.relative_to(ROOT)} JSON hatasi: {exc}")
+    check(not bad,
+          f"docs/metrics CSV/JSON dosyalari okunuyor ({len(csv_files)} CSV, {len(json_files)} JSON)",
+          f"Okunamayan/bozuk metrik dosyasi: {bad}")
+
+
 def check_episode_csv():
     pd = import_pandas()
     path = ROOT / "data" / "episodes" / "sara_best_episode.csv"
@@ -228,6 +310,17 @@ def check_tracked_files_clean():
     check(not bad, f"Yasaklı/ham dosya tracked DEĞİL ({len(tracked)} dosya izleniyor)",
           f"Repoya girmemesi gereken tracked dosyalar: {sorted(set(bad))}")
     # büyük dosya uyarısı (>5 MB)
+    staged = subprocess.run(["git", "diff", "--cached", "--name-only"], cwd=ROOT,
+                            capture_output=True, text=True, encoding="utf-8")
+    if staged.returncode == 0:
+        staged_files = [f for f in staged.stdout.splitlines() if f.strip()]
+        staged_bad = [f for f in staged_files if f.lower().endswith(forbidden_ext)]
+        staged_bad += [f for f in staged_files if "recording/" in f or f.startswith(("build/", "install/", "log/"))]
+        staged_bad += [f for f in staged_files if f.lower().endswith(".mp4") and not f.startswith("reports/")]
+        check(not staged_bad, f"Yasakli/ham dosya staged DEGIL ({len(staged_files)} staged dosya)",
+              f"Repoya girmemesi gereken staged dosyalar: {sorted(set(staged_bad))}")
+    else:
+        results.append((WARN, "git diff --cached calistirilamadi; staged kontrolu atlandi"))
     big = []
     for f in tracked:
         p = ROOT / f
@@ -244,6 +337,8 @@ def main():
     print("SARA Validation Suite — artefact doğrulama")
     print("=" * 64)
     check_markdown_links()
+    check_required_embedded_figures()
+    check_metrics_readable()
     check_episode_csv()
     check_diagnosis()
     check_rl_figures()

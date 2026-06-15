@@ -2,59 +2,78 @@
 
 [← README](../../README.md)
 
-Bu sayfa, depodaki tüm doğrulanabilir veri/artefakt dosyalarını ve **bu bundle'da bulunmayan** ham
-kayıtları listeler.
+## Table of Contents
+- [Purpose](#purpose)
+- [Methodology](#methodology)
+- [Inputs](#inputs)
+- [Execution / Commands](#execution--commands)
+- [Logs](#logs)
+- [Results](#results)
+- [Figures](#figures)
+- [Decision](#decision)
+- [Evidence Files](#evidence-files)
+- [Limitations](#limitations)
 
-## İçindekiler
-- [Bu depoda mevcut veri](#bu-depoda-mevcut-veri)
-- [Bu bundle'da olmayan ham kayıtlar](#bu-bundleda-olmayan-ham-kayıtlar)
-- [Doğrulanan episode değerleri](#doğrulanan-episode-değerleri)
+## Purpose
+Repodaki doğrulanabilir veri/kanıt yapısını ve repoya alınmayan ağır ham kayıtları tek yerde göstermek.
 
-## Bu depoda mevcut veri
+## Methodology
+Bu indeks, curated jüri artefaktlarını (`docs/metrics`, `docs/figures`, `docs/diagnostics`, `reports`,
+`src/validation`) ve `.gitignore` ile dışarıda bırakılan ham kayıt sınıflarını ayırır.
 
-| Dosya | Açıklama | Şema / boyut |
-|---|---|---|
-| [data/episodes/sara_best_episode.csv](../../data/episodes/sara_best_episode.csv) | En iyi episode tam telemetri (sim) | 34 kolon × 662 satır |
-| [docs/diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv](../diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv) | 6 senaryo düzeltilmiş RL/UKF özeti | 14 kolon × 6 satır |
-| [docs/diagnostics/rl_ukf/metrics_vs_raw_telemetry_ukf_span_check.csv](../diagnostics/rl_ukf/metrics_vs_raw_telemetry_ukf_span_check.csv) | Donmuş-kolon kanıtı | 5 kolon × 6 satır |
-| [docs/architecture/SARA_Sistem_Mimarisi.csv](../architecture/SARA_Sistem_Mimarisi.csv) | 23 mimari düğüm | draw.io CSV |
-| [docs/architecture/SARA_Baglanti_Listesi.csv](../architecture/SARA_Baglanti_Listesi.csv) | 28 mimari bağlantı | kaynak→hedef→veri→tip |
-| [reports/sara_mission_report.html](../../reports/sara_mission_report.html) | Görev raporu (HTML) | local asset: 2 PNG + 1 MP4 |
-| [reports/sara_best_episode.png](../../reports/sara_best_episode.png) | Episode görseli | PNG |
-| [reports/sara_episode_summary.png](../../reports/sara_episode_summary.png) | Episode özeti | PNG |
-| [reports/sara_mission_video.mp4](../../reports/sara_mission_video.mp4) | Görev videosu | MP4 (~0.12 MB) |
-| [figures/ocean_current_service_activity.png](../../figures/ocean_current_service_activity.png) | Akıntı aktivitesi (yeniden üretildi) | PNG, 4 panel |
-| [figures/ornek_*.png](../../figures/) | Plot aracının örnek çıktıları | 3 PNG |
-| [docs/figures/rl/*.png](../figures/rl/) | Üretilen RL figürleri | 4 PNG |
+## Inputs
+Repo dosya ağacı, [README.md](../../README.md), [.gitignore](../../.gitignore) ve
+[scripts/verify_validation_artifacts.py](../../scripts/verify_validation_artifacts.py).
 
-## sara_best_episode.csv kolon şeması (34)
-```
-t, step, x, y, z, u, yaw, pitch, ex, ey, ez, eu,
-throttle, pitch_fin, yaw_fin, esc_pwm, pitch_pwm, yaw_pwm,
-current_n, current_e, current_d, current_mode, energy_wh, reward, done, truncated,
-reward_progress, reward_depth, reward_cross, reward_energy, reward_fin, reward_time,
-reward_safety, reward_terminal
+## Execution / Commands
+```bash
+python scripts/verify_validation_artifacts.py
+git status
+git diff --stat
 ```
 
-## Bu bundle'da olmayan ham kayıtlar
+## Logs
+Curated log özetleri ham `.log` dosyası olarak değil, test başına `summary.csv/json` ve olay CSV'leri
+olarak tutulur:
+[stage1 mission phases](../metrics/stage1_fsm/mission_phases.csv) ·
+[stage2 fire status](../metrics/stage2_bt/fire_status.csv) ·
+[sensor topic rates](../metrics/sensor_health/topic_rates.csv).
 
-| Veri | Neden yok | Etkisi |
-|---|---|---|
-| Per-test rosbag (`.db3`) + büyük `telemetry.csv` (nav/guidance/controller/FSM/BT/sensor) | Boyut (~30–80 MB/dosya) | Özet PNG/CSV jüri için yeterli; ham kayıt repoya alınmaz. |
-| RL `recording/telemetry.csv` (per episode, ~50–65 MB) | Boyut | UKF RMSE bu dosyalardan **bağımsız yeniden hesaplandı**; sonuç repodadır (verification CSV). |
-| RL `metrics/rl_policy_timeseries.csv` | Boyut | Donmuş-kolon span-check ile doğrulandı; ham dosya repoya alınmaz. |
-| RL metrics export scripti | **repoda var** | Hatalı sürüm `legacy/rl_policy_validation_BUGGY.py`, düzeltilmiş sürüm `rl_policy_validation_fixed.py`. |
+## Results
+| Category | Path | Description | Included in Git? | Notes |
+|---|---|---|---|---|
+| Metrics | [docs/metrics/](../metrics/) | Curated summary CSV/JSON | Yes | Jüri için küçük, okunabilir özetler |
+| Figures | [docs/figures/](../figures/) | Validation plots | Yes | README/wiki içine gömülü |
+| RL diagnostics | [docs/diagnostics/rl_ukf/](../diagnostics/rl_ukf/) | UKF artefakt kanıtı, fixed/legacy exporter | Yes | Raw telemetry yerine doğrulanabilir özet |
+| Architecture | [docs/architecture/](../architecture/) | PNG/PDF/drawio + node/edge CSV | Yes | Verify mimari CSV tutarlılığını kontrol eder |
+| Logs | [docs/metrics/stage1_fsm/mission_phases.csv](../metrics/stage1_fsm/mission_phases.csv), [docs/metrics/stage2_bt/fire_status.csv](../metrics/stage2_bt/fire_status.csv) | Curated logs/summaries | Yes/Partial | Büyük raw loglar hariç |
+| Raw recordings | `recording/`, `recordings/`, `rosbag2_*`, `*.db3`, `*.mcap` | Heavy raw data | No | `.gitignore` ile dışarıda |
+| Archives | `*.zip`, `*.rar`, `*.bundle`, `*.7z` | Handoff/raw bundles | No | Git'e gitmemeli |
+| Reports | [reports/](../../reports/) | HTML/PNG/video | Yes/Partial | Curated küçük raporlar; raw kayıt değil |
+| Source scripts | [src/validation/](../../src/validation/) | Real validation code | Yes | Takımın final_validation analiz/test kodları |
+| Helper scripts | [scripts/](../../scripts/) | Recompute, figure generation, verify | Yes | Yardımcı teslim/yeniden üretim araçları |
+| Episode data | [data/episodes/sara_best_episode.csv](../../data/episodes/sara_best_episode.csv) | Curated best-episode CSV | Yes | 34 kolon, 662 adım |
 
-## Doğrulanan episode değerleri
-`python scripts/verify_validation_artifacts.py` ile dosyadan doğrulanmıştır:
+## Figures
+<img src="../figures/navigation/navigation_straight_trajectory_depth.png" width="760">
 
-| Ölçüt | Dosya değeri |
-|---|---:|
-| Final x | 50.037 m (≥ 50 ✓) |
-| Final derinlik z | 1.984 m (~2 m ✓) |
-| Final cross-track y | 0.029 m |
-| Energy | 7.274 Wh |
-| Toplam reward (Σ) | 932.45 |
-| Adım sayısı | 662 |
-| done / truncated | True / False ✓ |
-| Kütle (sim) | 15.85 kg (`sim/sara_sedaa.py:74`) |
+*Örnek curated figür: wiki/README içinde gömülü; yalnızca klasörde bırakılmış PNG değil.*
+
+<img src="../figures/rl/rl_episode_comparison_matrix.png" width="760">
+
+*Örnek diagnosis/validation figürü: RL policy candidate sonuçları için curated kanıt.*
+
+## Decision
+**PASS** — Curated metrikler, figürler, mimari dosyaları ve gerçek validation kodları repoda tutulur; ağır
+raw recording, arşiv, build/log/cache dosyaları `.gitignore` ile dışarıda bırakılır.
+
+## Evidence Files
+- [.gitignore](../../.gitignore)
+- [scripts/verify_validation_artifacts.py](../../scripts/verify_validation_artifacts.py)
+- [docs/metrics/all_summaries.json](../metrics/all_summaries.json)
+- [src/validation/README.md](../../src/validation/README.md)
+- [reports/sara_mission_report.html](../../reports/sara_mission_report.html)
+
+## Limitations
+Ham `recording/telemetry.csv` ve `.db3` bag dosyaları boyut nedeniyle repoda değildir. Gerektiğinde
+`final_validation.zip` veya harici `final_validation/results` klasöründen yeniden üretim yapılır.

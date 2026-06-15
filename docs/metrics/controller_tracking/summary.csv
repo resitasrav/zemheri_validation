@@ -1,0 +1,2 @@
+test,samples,duration_sec,position_rmse_m,position_max_error_m,depth_rmse_m,speed_rmse_mps,yaw_rmse_deg,yaw_max_error_deg,max_along_track_m,max_abs_cross_track_m
+controller_tracking,1509,50.265,0.2013856656114033,1.133806285263949,0.0012097875500702274,0.14964041356833935,0.02220885197634354,0.047592804283002194,36.26012348430169,6.586986598173515
