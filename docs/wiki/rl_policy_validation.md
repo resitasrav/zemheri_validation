@@ -29,8 +29,19 @@ Altı episode matrisi gerçek final_validation kayıtlarından analiz edildi. UK
 hesaplandı. Kabul kararı, takımın [rl_policy_validation.py](../../src/validation/rl_policy_validation.py)
 mantığındaki progress, depth RMSE, hız ve nav_valid eşiklerine göre yorumlandı.
 
+Ek kaynak ayrımı:
+
+- `rl.zip / rl_prevalidation`: kontrollü/basit görevde aday politikanın çalışabildiğini gösteren prevalidation
+  çıktısıdır; bu bölüm tek başına final ROS/Gazebo kabul kanıtı değildir.
+- `rl.zip / rl_summary` ve `final_validation1.zip`: altı akıntı senaryosundaki final ROS/Gazebo policy
+  karşılaştırmasını verir. Bu karşılaştırmada kabul edilen episode yoktur.
+- `docs/diagnostics/rl_ukf/`: eski UKF exporter artefaktını açıklayan ve ham telemetriden düzeltilmiş UKF
+  karşılaştırmasını veren ana tanı paketidir.
+
 ## Inputs
 - [data/episodes/sara_best_episode.csv](../../data/episodes/sara_best_episode.csv) — calm episode özeti, 34 kolon, 662 adım.
+- [validation_cases/rl_policy](../validation_cases/rl_policy/) — `rl.zip`, `final_validation1.zip` ve düzeltilmiş UKF tanısının küçük kanıt düzeni.
+- [rl_zip_episode_comparison.csv](../validation_cases/rl_policy/metrics/rl_zip_episode_comparison.csv)
 - [corrected_rl_ukf_summary_from_raw_telemetry.csv](../diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv)
 - [metrics_vs_raw_telemetry_ukf_span_check.csv](../diagnostics/rl_ukf/metrics_vs_raw_telemetry_ukf_span_check.csv)
 - [src/validation/rl_policy_validation.py](../../src/validation/rl_policy_validation.py)
@@ -47,6 +58,15 @@ Düzeltilmiş RL/UKF özetleri:
 [span check](../diagnostics/rl_ukf/metrics_vs_raw_telemetry_ukf_span_check.csv).
 
 ## Results
+### Prevalidation (`rl.zip`)
+
+`rl_prevalidation/sara_episode_summary.csv` kontrollü/basit 50 m görevde 16 episode'un tamamını `success=True`
+olarak raporlar. En iyi kayıt episode 12'dir: `50.04 m` ileri ilerleme, `1.98 m` derinlik, `0.03 m`
+cross-track ve `932.4` reward. Bu sonuç aday politikanın basit görevde çalışabildiğini gösterir; final
+akıntı senaryolarındaki kabul kararının yerine geçmez.
+
+### Final ROS/Gazebo Akıntı Senaryoları
+
 | Senaryo | Progress | Cross-track RMSE | Depth RMSE | Raw UKF RMSE | Aligned UKF RMSE | max speed | nav_valid |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | no_current | 50.12 m | 0.54 m | 1.10 m | 3.86 m | 0.73 m | 1.03 m/s | 1.0 |
@@ -61,9 +81,14 @@ aralığında ve `0.35 m` eşiğinin üzerindedir. `reverse_current` ayrıca 50 
 `hard_cross_current` ise 4.79 m cross-track RMSE ile yanal hata açısından zayıftır.
 
 ## Figures
+<img src="../validation_cases/rl_policy/figures/rl_zip_episode_performance_bars.png" width="820">
+
+*`rl.zip` kaynaklı Türkçe performans paneli: 6 final episode'un puan, cross-track/depth RMSE ve ilerleme
+oranı özeti. Bu panelde de kabul edilen episode yoktur.*
+
 <img src="../figures/rl/rl_episode_comparison_matrix.png" width="900">
 
-*RL/policy candidate episode matrisi: progress, cross-track, depth RMSE ve UKF metrikleri birlikte.*
+*Düzeltilmiş RL/policy candidate episode matrisi: başlangıç-hizalı UKF RMSE ve derinlik RMSE birlikte.*
 
 <img src="../figures/rl/rl_current_robustness.png" width="700">
 
@@ -82,6 +107,7 @@ aralığında ve `0.35 m` eşiğinin üzerindedir. `reverse_current` ayrıca 50 
 senaryoda derinlik RMSE kabul eşiğini sağlamadı; bu nedenle "trained SAC agent PASS" gibi sunulmamalıdır.
 
 ## Evidence Files
+- [docs/validation_cases/rl_policy/](../validation_cases/rl_policy/)
 - [docs/diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv](../diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv)
 - [docs/diagnostics/rl_ukf/metrics_vs_raw_telemetry_ukf_span_check.csv](../diagnostics/rl_ukf/metrics_vs_raw_telemetry_ukf_span_check.csv)
 - [docs/figures/rl/](../figures/rl/)

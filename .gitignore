@@ -57,12 +57,19 @@ rosbag2_*/
 recording/
 recordings/
 raw_recordings/
+/final_validation/
+/final_validation*/
+analysis/final_validation/results/**/recording/
 
 # Büyük ham telemetry dökümleri
 raw/
 raw_data/
 tmp/
 temp/
+analysis/final_validation/results/**/metrics/*timeseries*.csv
+analysis/final_validation/results/**/metrics/aligned_*.csv
+analysis/final_validation/results/**/metrics/rl_best_episode.csv
+analysis/final_validation/results/**/recording/telemetry.csv
 
 # Videolar: varsayılan yok say; yalnızca reports/ altındaki curated olanı tut
 *.mp4

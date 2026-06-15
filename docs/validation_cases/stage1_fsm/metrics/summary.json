@@ -1,0 +1,18 @@
+{
+  "test": "stage1_fsm",
+  "samples": 3241,
+  "duration_sec": 108.0,
+  "position_rmse_m": 0.03378257413065689,
+  "position_max_error_m": 0.04918191603057204,
+  "depth_rmse_m": 0.0014547286667103206,
+  "speed_rmse_mps": 0.01525794848575392,
+  "yaw_rmse_deg": 0.05864145707753504,
+  "yaw_max_error_deg": 0.1192307040447853,
+  "max_along_track_m": 73.84271434711846,
+  "max_abs_cross_track_m": 32.6023517436566,
+  "stage1_finish_line_error_m": 1.7242751487927706,
+  "stage1_finish_cross_track_m": 32.544988092601066,
+  "stage1_outbound_50m_valid": true,
+  "stage1_finish_line_valid": false,
+  "unique_stages": "IDLE, SAVE_START_POINT, DIVE_TO_DEPTH, PRE_CRUISE_10M, START_TIMED_RUN, OUTBOUND_CRUISE_50M, TURN_AROUND, RETURN_TO_FINISH_LINE, CUT_POWER, COMPLETE"
+}

@@ -17,6 +17,7 @@ TEKNOFEST 2026 — Su Altı Roket Yarışması · Hazırlık tarihi: 15 Haziran 
 - [System Architecture](#system-architecture)
 - [Validation Scope vs Runtime Scope](#validation-scope-vs-runtime-scope)
 - [Validation Methodology](#validation-methodology)
+- [Curated Validation Case Layout](#curated-validation-case-layout)
 - [Test Inventory](#test-inventory)
 - [Navigation Validation](#navigation-validation)
 - [Guidance Validation](#guidance-validation)
@@ -55,6 +56,7 @@ makine-okunur düğüm/bağlantı listeleri [docs/architecture/](docs/architectu
 | [SARA_Sistem_Mimarisi_temiz.drawio](docs/architecture/SARA_Sistem_Mimarisi_temiz.drawio) | Düzenlenebilir draw.io kaynağı |
 | [SARA_Sistem_Mimarisi.csv](docs/architecture/SARA_Sistem_Mimarisi.csv) | 29 düğüm (katman + stil) |
 | [SARA_Baglanti_Listesi.csv](docs/architecture/SARA_Baglanti_Listesi.csv) | 38 bağlantı (kaynak→hedef→veri→tip) |
+| [ros2_navigation_dataflow.md](docs/architecture/ros2_navigation_dataflow.md) | Mermaid ile ROS 2 navigasyon/kontrol veri akışı |
 
 > **Tutarlılık kontrolü (doğrulandı):** Bağlantı listesindeki kenar uç noktalarının tümü, düğüm
 > listesindeki düğümlerden biridir — yetim referans yok (`python scripts/verify_validation_artifacts.py`).
@@ -79,27 +81,60 @@ Topic notu: `/dvl/raw` ham DVL ölçümüdür, `/dvl/quality_twist` kalite kapı
 girdisidir. Bazı eski/yardımcı mission runner kayıt listelerinde görülen `/dvl/twist` legacy DVL twist
 kaydıdır; curated validasyon metriklerinde canonical topic `/dvl/quality_twist` kullanılır.
 
-### ROS 2 navigasyon/görev zinciri (tüm testlerde ortak)
+### ROS 2 navigasyon / görev / kontrol zinciri
 
-```
-Gazebo Harmonic (buoyant_sara.world)
-   │  GT odometri, IMU, DVL, basınç
-   ▼
-ros_gz köprüleri → dvl_quality_gate_node → ukf_node (robot_localization, UKF)
-   │                                            │ /odometry/ukf
-   ▼                                            ▼
-ocean_current_node                       navigation_health_node (valid / degraded)
-                                                │ /navigation/status
-                                                ▼
-                                         auv_state_publisher → mission_manager_node (FSM + Aşama-2 BT)
-                                                │ /auv/state                 │ /guidance/goal
-                                                ▼                            ▼
-                                         guidance_node (LOS / Waypoint) → control_setpoint_node (PID setpoint)
-                                                                              │ /sara_uuv/cmd_vel
-                                                                              ▼
-                                         mavlink_bridge_node ──MAVLink──► ArduPilot (Attitude / Depth Hold)
-                                                                              ▼
-                                                                  PWM/Servo → 1 itki motoru + 4 kuyruk servosu
+> Sensör → UKF → güdüm → görev zinciri **tüm testlerde ortaktır**. Kontrol tarafında ise yeşil
+> **validasyon (sim) zinciri** testlerde fiilen koşan yoldur; kırmızı kesikli **gerçek araç teslim
+> sınırı** bu pakette doğrudan kanıtı olmayan, kapsam dışı runtime yoludur. Ayrıntı:
+> [docs/architecture/ros2_navigation_dataflow.md](docs/architecture/ros2_navigation_dataflow.md).
+
+```mermaid
+---
+config:
+  layout: dagre
+---
+flowchart TB
+    GZ["Gazebo Harmonic — buoyant_sara.world<br/><small>GT odometri · IMU · DVL · basınç · akıntı</small>"]
+    GZ --> BR["ros_gz köprüleri"]
+    BR --> GATE["dvl_quality_gate_node"]
+    GATE -->|"/dvl/quality_twist"| UKF["ukf_node<br/><small>robot_localization (UKF)</small>"]
+    BR --> UKF
+    UKF -->|"/odometry/ukf"| HEALTH["navigation_health_node<br/><small>valid / degraded</small>"]
+    HEALTH -->|"/navigation/status"| STATE["auv_state_publisher<br/>/auv/state"]
+    UKF --> STATE
+    OC["ocean_current_node"] --> MIS["mission_manager_node<br/><small>Aşama-1 FSM + Aşama-2 BT</small>"]
+    STATE --> MIS
+    MIS -->|"/guidance/goal"| GUID["guidance_node<br/><small>LOS / Waypoint</small>"]
+    STATE --> GUID
+
+    subgraph SIM["Validasyon kontrol zinciri — control_backend:=ros (testlerde koşan yol)"]
+        direction TB
+        SETP["setpoint_controller<br/><small>derinlik/yaw hatası → hız komutu</small>"]
+        SETP -->|"/sara_uuv/cmd_vel"| VEL["velocity_controller"]
+        VEL -->|"/sara_uuv/propeller/cmd_angvel"| PROP["1 itki motoru"]
+        VEL -->|"/sara_uuv/fin_1..4/cmd_pos"| FINS["4 kuyruk (X-fin) servosu"]
+    end
+
+    subgraph RUNTIME["Gerçek araç teslim sınırı — KAPSAM DIŞI (bu pakette kanıt yok)"]
+        direction TB
+        RB["control_setpoint_bridge_node"]
+        RB -->|"/control/setpoint (ControlSetpoint)"| PIX["Pixhawk / ArduPilot<br/><small>düşük seviye PID + mixer</small>"]
+        PIX --> PWM["PWM/Servo → itki + kuyruk aktüatörleri"]
+    end
+
+    GUID -->|"/guidance/setpoint"| SETP
+    GUID -. "gerçek araç profili (kapsam dışı)" .-> RB
+
+    classDef pipe fill:#EEF2F7,stroke:#37474F,stroke-width:1.5px,color:#0D1B2A;
+    classDef sim fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px,color:#0D1B2A;
+    classDef real fill:#FFEBEE,stroke:#C62828,stroke-width:2px,color:#0D1B2A;
+
+    class GZ,BR,GATE,UKF,HEALTH,STATE,OC,MIS,GUID pipe;
+    class SETP,VEL,PROP,FINS sim;
+    class RB,PIX,PWM real;
+
+    style SIM fill:#F1F8E9,stroke:#2E7D32,stroke-width:2px;
+    style RUNTIME fill:#FCE4EC,stroke:#C62828,stroke-width:2px,stroke-dasharray: 6 4;
 ```
 
 > **Not (kapsam):** RL Tuner (SAC tabanlı PID kazanç ayarlayıcı) mimaride **ateşleme fazında devre dışı**
@@ -118,6 +153,9 @@ ocean_current_node                       navigation_health_node (valid / degrade
   dışa-aktarımlarından, takım analiz kodundaki aynı matematik ([src/validation/](src/validation/)) ile
   [scripts/generate_validation_figures.py](scripts/generate_validation_figures.py) tarafından **yeniden
   üretilmiştir**. Ham telemetry (~235 MB) boyut nedeniyle repoya **dahil değildir**.
+- Küçük ve okunabilir kanıtlar ayrıca [docs/validation_cases/](docs/validation_cases/) altında test bazlı
+  `figures/` ve `metrics/` klasörlerine ayrılmıştır. Bu düzen `final_validation/results/<case>/...`
+  yapısını izler; ancak büyük telemetry, bag, raw log ve timeseries dosyalarını taşımaz.
 
 ### Durum etiketleri
 
@@ -130,6 +168,25 @@ ocean_current_node                       navigation_health_node (valid / degrade
 
 ---
 
+## Curated Validation Case Layout
+
+Final validation arşivlerindeki ham çıktı yapısı şu mantıktadır: `results/<test>/<figures|metrics|recording>`.
+Repo içinde aynı okuma düzeni [docs/validation_cases/](docs/validation_cases/) altında küçük kanıt paketi
+olarak tutulur:
+
+```text
+docs/validation_cases/<test_adi>/
+  figures/   # ilgili testin seçilmiş PNG figürleri
+  metrics/   # kısa CSV/JSON/MD özetleri
+```
+
+Bu klasörde `final_validation1.zip`, `final_validation.zip`, `rl.zip` ve `algorithm_io_dataflow.md` birlikte
+referans alınır. Ham `recording/telemetry.csv`, `.db3` bag, büyük timeseries/aligned CSV, zip/rar/bundle,
+build/log/cache çıktıları repoya alınmaz. RL için ayrıca `rl.zip` kaynaklı prevalidation özetleri ile
+final ROS/Gazebo episode karşılaştırması ayrı dosyalarda tutulur.
+
+---
+
 ## Test Inventory
 
 Her satır, **gerçek telemetriden yeniden üretilmiş** kanıta bağlanır. Figürler ilgili wiki sayfasına
@@ -137,17 +194,17 @@ ve aşağıdaki bölümlere gömülüdür.
 
 | Layer | Test | Evidence | Figür | Status |
 |---|---|---|---|:---:|
-| Navigation | Straight Line | [wiki](docs/wiki/navigation_validation.md) · [summary](docs/metrics/navigation_straight/summary.csv) | [göm](#navigation-validation) | **PASS** |
-| Navigation | Resilience (DVL) | [wiki](docs/wiki/navigation_validation.md) · [summary](docs/metrics/navigation_resilience/summary.csv) | [göm](#navigation-validation) | **KISMİ** |
-| Guidance | LOS | [wiki](docs/wiki/guidance_validation.md) · [summary](docs/metrics/guidance_los/summary.csv) | [göm](#guidance-validation) | **PASS** |
-| Guidance | Waypoint | [wiki](docs/wiki/guidance_validation.md) · [summary](docs/metrics/guidance_waypoint/summary.csv) | [göm](#guidance-validation) | **PASS** |
-| Controller | Tracking | [wiki](docs/wiki/controller_validation.md) · [summary](docs/metrics/controller_tracking/summary.csv) | [göm](#controller-validation) | **PASS** |
-| Sensor | Health | [wiki](docs/wiki/sensor_health_validation.md) · [rates](docs/metrics/sensor_health/topic_rates.csv) | [göm](#sensor-health-validation) | **PASS** |
-| FSM | Mission (Stage 1) | [wiki](docs/wiki/mission_fsm_validation.md) · [summary](docs/metrics/stage1_fsm/summary.csv) | [göm](#mission-fsm-validation) | **KISMİ** |
-| BT | Mission (Stage 2) | [wiki](docs/wiki/fire_behavior_tree_validation.md) · [summary](docs/metrics/stage2_bt/summary.csv) | [göm](#fire-behavior-tree-validation) | **KISMİ** |
+| Navigation | Straight Line | [wiki](docs/wiki/navigation_validation.md) · [case](docs/validation_cases/navigation_straight/) · [summary](docs/metrics/navigation_straight/summary.csv) | [göm](#navigation-validation) | **PASS** |
+| Navigation | Resilience (DVL) | [wiki](docs/wiki/navigation_validation.md) · [case](docs/validation_cases/navigation_resilience/) · [summary](docs/metrics/navigation_resilience/summary.csv) | [göm](#navigation-validation) | **KISMİ** |
+| Guidance | LOS | [wiki](docs/wiki/guidance_validation.md) · [case](docs/validation_cases/guidance_los/) · [summary](docs/metrics/guidance_los/summary.csv) | [göm](#guidance-validation) | **PASS** |
+| Guidance | Waypoint | [wiki](docs/wiki/guidance_validation.md) · [case](docs/validation_cases/guidance_waypoint/) · [summary](docs/metrics/guidance_waypoint/summary.csv) | [göm](#guidance-validation) | **PASS** |
+| Controller | Tracking | [wiki](docs/wiki/controller_validation.md) · [case](docs/validation_cases/controller_tracking/) · [summary](docs/metrics/controller_tracking/summary.csv) | [göm](#controller-validation) | **PASS** |
+| Sensor | Health | [wiki](docs/wiki/sensor_health_validation.md) · [case](docs/validation_cases/sensor_health/) · [rates](docs/metrics/sensor_health/topic_rates.csv) | [göm](#sensor-health-validation) | **PASS** |
+| FSM | Mission (Stage 1) | [wiki](docs/wiki/mission_fsm_validation.md) · [case](docs/validation_cases/stage1_fsm/) · [summary](docs/metrics/stage1_fsm/summary.csv) | [göm](#mission-fsm-validation) | **KISMİ** |
+| BT | Mission (Stage 2) | [wiki](docs/wiki/fire_behavior_tree_validation.md) · [case](docs/validation_cases/stage2_bt/) · [summary](docs/metrics/stage2_bt/summary.csv) | [göm](#fire-behavior-tree-validation) | **KISMİ** |
 | BT | Fire Decision Logic | mimaride tanımlı · izole test yok | — | **Needs Evidence** |
-| Ocean Current | Service Robustness | [wiki](docs/wiki/ocean_current_validation.md) · [summary](docs/metrics/ocean_current_services/summary.csv) | [göm](#ocean-current-validation) | **PASS** |
-| RL | Policy Candidate | [diagnostics](docs/diagnostics/rl_ukf/) · [figures](docs/figures/rl/) · [episode CSV](data/episodes/sara_best_episode.csv) | [göm](#rl-policy-validation) | **WIP** |
+| Ocean Current | Service Robustness | [wiki](docs/wiki/ocean_current_validation.md) · [case](docs/validation_cases/ocean_current_services/) · [summary](docs/metrics/ocean_current_services/summary.csv) | [göm](#ocean-current-validation) | **PASS** |
+| RL | Policy Candidate | [case](docs/validation_cases/rl_policy/) · [diagnostics](docs/diagnostics/rl_ukf/) · [episode CSV](data/episodes/sara_best_episode.csv) | [göm](#rl-policy-validation) | **WIP** |
 
 ---
 

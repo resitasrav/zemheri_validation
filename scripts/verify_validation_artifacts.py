@@ -267,7 +267,8 @@ def check_architecture():
     nodes_csv = arch / "SARA_Sistem_Mimarisi.csv"
     conn_csv = arch / "SARA_Baglanti_Listesi.csv"
     for f in ["SARA_Sistem_Mimarisi_temiz.png", "SARA_Sistem_Mimarisi_temiz.pdf",
-              "SARA_Sistem_Mimarisi_temiz.drawio", nodes_csv.name, conn_csv.name]:
+              "SARA_Sistem_Mimarisi_temiz.drawio", "ros2_navigation_dataflow.md",
+              nodes_csv.name, conn_csv.name]:
         check((arch / f).exists(), f"architecture/{f} mevcut", f"architecture/{f} YOK")
     if not (nodes_csv.exists() and conn_csv.exists()):
         return
@@ -287,6 +288,50 @@ def check_architecture():
     check(not missing,
           f"Mimari CSV tutarlı: {len(nodes)} düğüm, tüm bağlantı uçları tanımlı",
           f"Mimari CSV tutarsız — düğüm listesinde olmayan uçlar: {sorted(set(missing))}")
+
+
+def check_validation_cases():
+    """Test bazli curated case klasorleri bos kalmamali."""
+    base = ROOT / "docs" / "validation_cases"
+    required = {
+        "controller_tracking": (2, 2),
+        "navigation_straight": (2, 2),
+        "guidance_los": (2, 2),
+        "guidance_waypoint": (2, 2),
+        "navigation_resilience": (2, 2),
+        "ocean_current_services": (1, 2),
+        "sensor_health": (1, 2),
+        "stage1_fsm": (2, 2),
+        "stage2_bt": (2, 2),
+        "rl_policy": (4, 8),
+    }
+    if not check((base / "README.md").exists(),
+                 "docs/validation_cases/README.md mevcut",
+                 "docs/validation_cases/README.md YOK"):
+        return
+    bad = []
+    for case, (min_fig, min_metric) in required.items():
+        cdir = base / case
+        fig_dir = cdir / "figures"
+        metric_dir = cdir / "metrics"
+        fig_files = [p for p in fig_dir.glob("*") if p.is_file()] if fig_dir.exists() else []
+        metric_files = [p for p in metric_dir.rglob("*") if p.is_file()] if metric_dir.exists() else []
+        if len(fig_files) < min_fig or len(metric_files) < min_metric:
+            bad.append(f"{case}: figures={len(fig_files)} metrics={len(metric_files)}")
+    check(not bad,
+          "Validation case klasorleri dolu ve test bazli ayrilmis",
+          f"Validation case eksik/bos: {bad}")
+    rl_required = [
+        base / "rl_policy" / "metrics" / "rl_zip_episode_comparison.csv",
+        base / "rl_policy" / "metrics" / "rl_zip_episode_aggregate_summary.csv",
+        base / "rl_policy" / "metrics" / "rl_prevalidation_episode_summary.csv",
+        base / "rl_policy" / "figures" / "rl_zip_episode_performance_bars.png",
+        base / "rl_policy" / "metrics" / "final_validation1_episode_summaries" / "rl_policy_20260615_140215.csv",
+    ]
+    missing = [str(p.relative_to(ROOT)) for p in rl_required if not p.exists()]
+    check(not missing,
+          "RL zip/final_validation1 kisa kanitlari validation_cases altinda mevcut",
+          f"RL case kanitlari eksik: {missing}")
 
 
 def check_tracked_files_clean():
@@ -345,6 +390,7 @@ def main():
     check_html_report()
     check_notebook()
     check_architecture()
+    check_validation_cases()
     check_tracked_files_clean()
 
     n_fail = sum(1 for lvl, _ in results if lvl == FAIL)

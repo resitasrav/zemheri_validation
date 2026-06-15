@@ -13,9 +13,9 @@ Opsiyonel (harici, repoda DEĞİL — büyük ham telemetri):
   --results <final_validation/results>   trajectory overlay için ham telemetry.csv
 
 Üretilen figürler -> docs/figures/rl/ :
-  rl_episode_comparison_matrix.png   senaryo x {UKF aligned RMSE, depth RMSE} + karar
-  rl_current_robustness.png          ordinal akıntı şiddeti vs cross-track RMSE
-  rl_ukf_raw_vs_aligned_rmse.png     raw vs başlangıç-hizalı UKF RMSE
+  rl_episode_comparison_matrix.png   senaryo x {başlangıç-hizalı UKF RMSE, derinlik RMSE} + karar
+  rl_current_robustness.png          ordinal akıntı şiddeti vs yanal sapma RMSE
+  rl_ukf_raw_vs_aligned_rmse.png     ham vs başlangıç-hizalı UKF RMSE
   rl_trajectory_overlay.png          GT + UKF (gerçek telemetri) + referans hat
 
 KABUL KRİTERİ (gerçek, rl_policy_validation.py'den):
@@ -51,6 +51,14 @@ SEVERITY = {
     "no_current": 0, "following_current": 1, "cross_current": 2,
     "diagonal_current": 3, "reverse_current": 4, "hard_cross_current": 5,
 }
+SCENARIO_TR = {
+    "no_current": "akıntısız",
+    "following_current": "takip eden",
+    "cross_current": "çapraz",
+    "diagonal_current": "diyagonal",
+    "reverse_current": "ters",
+    "hard_cross_current": "güçlü çapraz",
+}
 DEPTH_RMSE_THRESHOLD = 0.35     # rl_policy_validation.py kabul eşiği
 
 GT_TOPIC = "/ground_truth/odometry"
@@ -66,12 +74,12 @@ def load_summary():
 def status_label(row):
     """Gerçek kabul kriterinin belirleyici bileşeni: depth RMSE <= 0.35 m.
     Hepsi eşiği aştığı için aday politika 'eşik altı' (WIP)."""
-    return "PASS" if row["depth_rmse_m"] <= DEPTH_RMSE_THRESHOLD else "below thr."
+    return "GEÇTİ" if row["depth_rmse_m"] <= DEPTH_RMSE_THRESHOLD else "eşik üstü"
 
 
 def fig_comparison_matrix(df):
     fig, axes = plt.subplots(1, 2, figsize=(13, 5.2))
-    labels = [e.replace("_current", "").replace("_", " ") for e in df["episode"]]
+    labels = [SCENARIO_TR.get(e, e.replace("_current", "").replace("_", " ")) for e in df["episode"]]
     x = np.arange(len(df))
 
     axes[0].bar(x, df["ukf_aligned_rmse_m"], color="#548235")
@@ -94,7 +102,7 @@ def fig_comparison_matrix(df):
 
     fig.suptitle("RL aday politikası — akıntı senaryosu karşılaştırma matrisi\n"
                  "(UKF RMSE düzeltilmiş; kabul derinlik RMSE ≤ 0.35 m kriterine bağlı — "
-                 "6 senaryoda da eşik altı. Eğitilmiş SAC değildir.)", fontsize=11)
+                 "6 senaryoda da kabul eşiği aşılıyor. Eğitilmiş SAC değildir.)", fontsize=11)
     fig.tight_layout()
     p = OUT / "rl_episode_comparison_matrix.png"
     fig.savefig(p); plt.close(fig)
@@ -105,14 +113,14 @@ def fig_current_robustness(df):
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.plot(df["severity"], df["cross_track_rmse_m"], "o-", color="#C00000", lw=1.8, ms=8)
     for _, row in df.iterrows():
-        ax.annotate(row["episode"].replace("_current", ""),
+        ax.annotate(SCENARIO_TR.get(row["episode"], row["episode"].replace("_current", "")),
                     (row["severity"], row["cross_track_rmse_m"]),
                     textcoords="offset points", xytext=(6, 6), fontsize=8)
     ax.set_xlabel("Ordinal akıntı şiddeti (senaryo sırası, fiziksel büyüklük değil)")
-    ax.set_ylabel("Cross-track RMSE [m]")
-    ax.set_title("Akıntı dayanıklılığı — ordinal şiddet vs yana sapma RMSE")
+    ax.set_ylabel("Yanal sapma RMSE [m]")
+    ax.set_title("Akıntı dayanıklılığı — senaryo sırası vs yanal sapma RMSE")
     ax.set_xticks(list(SEVERITY.values()))
-    ax.set_xticklabels([k.replace("_current", "") for k in SEVERITY], rotation=20, ha="right")
+    ax.set_xticklabels([SCENARIO_TR.get(k, k.replace("_current", "")) for k in SEVERITY], rotation=20, ha="right")
     fig.tight_layout()
     p = OUT / "rl_current_robustness.png"
     fig.savefig(p); plt.close(fig)
@@ -121,13 +129,13 @@ def fig_current_robustness(df):
 
 def fig_raw_vs_aligned(df):
     fig, ax = plt.subplots(figsize=(9, 5))
-    labels = [e.replace("_current", "") for e in df["episode"]]
+    labels = [SCENARIO_TR.get(e, e.replace("_current", "")) for e in df["episode"]]
     x = np.arange(len(df)); w = 0.38
-    ax.bar(x - w / 2, df["ukf_raw_rmse_m"], w, label="Raw RMSE (origin farkı dahil)", color="#F4B183")
-    ax.bar(x + w / 2, df["ukf_aligned_rmse_m"], w, label="Aligned RMSE (başlangıç çıkarıldı)", color="#548235")
+    ax.bar(x - w / 2, df["ukf_raw_rmse_m"], w, label="Ham RMSE (başlangıç ofseti dahil)", color="#F4B183")
+    ax.bar(x + w / 2, df["ukf_aligned_rmse_m"], w, label="Hizalı RMSE (başlangıç çıkarıldı)", color="#548235")
     ax.set_xticks(x); ax.set_xticklabels(labels, rotation=20, ha="right")
     ax.set_ylabel("UKF–GT konum RMSE [m]")
-    ax.set_title("UKF RMSE: raw vs başlangıç-hizalı (ham telemetriden yeniden hesap)")
+    ax.set_title("UKF RMSE: ham vs başlangıç-hizalı (ham telemetriden yeniden hesap)")
     ax.legend()
     for i, row in df.iterrows():
         ax.text(i - w / 2, row["ukf_raw_rmse_m"], f"{row['ukf_raw_rmse_m']:.2f}", ha="center", va="bottom", fontsize=7)

@@ -18,8 +18,9 @@
 Repodaki doğrulanabilir veri/kanıt yapısını ve repoya alınmayan ağır ham kayıtları tek yerde göstermek.
 
 ## Methodology
-Bu indeks, curated jüri artefaktlarını (`docs/metrics`, `docs/figures`, `docs/diagnostics`, `reports`,
-`src/validation`) ve `.gitignore` ile dışarıda bırakılan ham kayıt sınıflarını ayırır.
+Bu indeks, curated jüri artefaktlarını (`docs/metrics`, `docs/figures`, `docs/validation_cases`,
+`docs/diagnostics`, `reports`, `src/validation`) ve `.gitignore` ile dışarıda bırakılan ham kayıt sınıflarını
+ayırır.
 
 ## Inputs
 Repo dosya ağacı, [README.md](../../README.md), [.gitignore](../../.gitignore) ve
@@ -44,6 +45,7 @@ olarak tutulur:
 |---|---|---|---|---|
 | Metrics | [docs/metrics/](../metrics/) | Curated summary CSV/JSON | Yes | Jüri için küçük, okunabilir özetler |
 | Figures | [docs/figures/](../figures/) | Validation plots | Yes | README/wiki içine gömülü |
+| Validation cases | [docs/validation_cases/](../validation_cases/) | Test bazlı `figures/` + `metrics/` düzeni | Yes | `final_validation/results/<case>` yapısının küçük kanıt karşılığı |
 | RL diagnostics | [docs/diagnostics/rl_ukf/](../diagnostics/rl_ukf/) | UKF artefakt kanıtı, fixed/legacy exporter | Yes | Raw telemetry yerine doğrulanabilir özet |
 | Architecture | [docs/architecture/](../architecture/) | PNG/PDF/drawio + node/edge CSV | Yes | Verify mimari CSV tutarlılığını kontrol eder |
 | Logs | [docs/metrics/stage1_fsm/mission_phases.csv](../metrics/stage1_fsm/mission_phases.csv), [docs/metrics/stage2_bt/fire_status.csv](../metrics/stage2_bt/fire_status.csv) | Curated logs/summaries | Yes/Partial | Büyük raw loglar hariç |
@@ -56,6 +58,15 @@ olarak tutulur:
 | Runtime control contract | `/control/setpoint` | Real vehicle / Pixhawk handoff topic | No direct telemetry evidence | Validation koşumları `control_backend:=ros` kullanır |
 | DVL canonical topics | `/dvl/raw`, `/dvl/quality_twist` | Raw DVL and quality-gated UKF input | Yes, in recorder/analysis config | `/dvl/twist` legacy mission-runner recording entry; curated metrics use `/dvl/quality_twist` |
 
+## Source Bundle Notes
+
+| Kaynak paket | Rol | Repoya alınan kısım | Repoya alınmayan kısım |
+|---|---|---|---|
+| `final_validation1.zip` | Ana final validation referansı | Kısa RL episode summary CSV'leri ve mevcut curated türevler | `recording/`, `.db3`, telemetry, büyük timeseries/aligned CSV |
+| `final_validation.zip` | Önceki/ham final validation arşivi | Mevcut `docs/metrics`, `docs/figures`, `src/validation` türevleri | Ham kayıt ve arşiv içeriği |
+| `rl.zip` | RL prevalidation + episode karşılaştırma paketi | `docs/validation_cases/rl_policy/` altındaki küçük CSV/MD ve Türkçe figürler | Zip arşivinin kendisi |
+| `algorithm_io_dataflow.md` | Runtime veri akışı sözleşmesi | README/wiki/mimari kapsam notları | Ana repo dışındaki ham runtime workspace |
+
 ## Figures
 <img src="../figures/navigation/navigation_straight_trajectory_depth.png" width="760">
 
@@ -64,6 +75,11 @@ olarak tutulur:
 <img src="../figures/rl/rl_episode_comparison_matrix.png" width="760">
 
 *Örnek diagnosis/validation figürü: RL policy candidate sonuçları için curated kanıt.*
+
+<img src="../validation_cases/rl_policy/figures/rl_zip_episode_performance_bars.png" width="760">
+
+*`rl.zip` kaynaklı Türkçe episode performans paneli: final ROS/Gazebo policy adayının 6 senaryoda kabul
+edilmediğini gösteren özet.*
 
 ## Decision
 **PASS** — Curated metrikler, figürler, mimari dosyaları ve gerçek validation kodları repoda tutulur; ağır

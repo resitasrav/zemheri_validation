@@ -1,0 +1,14 @@
+{
+  "test": "guidance_waypoint",
+  "guidance_mode": "WAYPOINT",
+  "decision": "KABUL — waypoint rotası tamamlandı",
+  "accepted": true,
+  "waypoint_count": 4,
+  "cross_track_rmse_m": 0.5797398283118884,
+  "max_abs_cross_track_m": 1.1815992824769848,
+  "initial_cross_track_m": 0.0,
+  "final_cross_track_m": 1.1523101602961225,
+  "heading_rmse_deg": 5.419215868642915,
+  "final_distance_m": 2.5380908953687267,
+  "duration_sec": 70.541
+}
