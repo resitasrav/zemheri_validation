@@ -73,7 +73,7 @@ def load_summary():
 
 def status_label(row):
     """Gerçek kabul kriterinin belirleyici bileşeni: depth RMSE <= 0.35 m.
-    Hepsi eşiği aştığı için aday politika 'eşik altı' (WIP)."""
+    Hepsi eşiği aştığı için aday politika tüm senaryolarda 'eşik üstü' (WIP)."""
     return "GEÇTİ" if row["depth_rmse_m"] <= DEPTH_RMSE_THRESHOLD else "eşik üstü"
 
 
