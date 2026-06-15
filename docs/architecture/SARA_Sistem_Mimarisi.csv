@@ -42,3 +42,9 @@ gazebo,"Gazebo Harmonic — Simülasyon",Test,#7030A0,#FFFFFF,#4A1F6B,,
 urdf,"URDF / Xacro Model",Test,#E5D9F2,#4A1F6B,#B49BD8,gazebo,
 sensor_sim,"Sensör Sim. (DVL / IMU / Basınç)",Test,#E5D9F2,#4A1F6B,#B49BD8,urdf,
 rosbag_hil,"ros2 bag · HIL · Havuz Testi",Test,#E5D9F2,#4A1F6B,#B49BD8,sensor_sim,
+setpoint_controller,"setpoint_controller — ROS sim setpoint → /sara_uuv/cmd_vel",Gorev,#1F4E79,#FFFFFF,#14385A,guidance_node,/guidance/setpoint
+velocity_controller,"velocity_controller — ROS sim hız/X-fin dağıtımı",Gorev,#1F4E79,#FFFFFF,#14385A,setpoint_controller,/sara_uuv/cmd_vel
+control_setpoint_bridge_node,"control_setpoint_bridge_node — runtime /control/setpoint köprüsü",Donanim,#595959,#FFFFFF,#3A3A3A,guidance_node,/guidance/setpoint
+failsafe_manager_node,"failsafe_manager_node — merkezi runtime failsafe (/auv/failsafe/status)",Guvenlik,#C00000,#FFFFFF,#7F0000,navigation_health_node,/navigation/status
+stage2_fire_bt_node,"stage2_fire_bt_node — ateşleme izin adayı",Guvenlik,#C00000,#FFFFFF,#7F0000,mission_manager_node,/auv/mission/status
+fire_control_node,"fire_control_node — actuator/status latch",Guvenlik,#C00000,#FFFFFF,#7F0000,stage2_fire_bt_node,/auv/fire/permission_candidate

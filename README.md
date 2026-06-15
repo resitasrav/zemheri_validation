@@ -15,6 +15,7 @@ TEKNOFEST 2026 — Su Altı Roket Yarışması · Hazırlık tarihi: 15 Haziran 
 ## Table of Contents
 
 - [System Architecture](#system-architecture)
+- [Validation Scope vs Runtime Scope](#validation-scope-vs-runtime-scope)
 - [Validation Methodology](#validation-methodology)
 - [Test Inventory](#test-inventory)
 - [Navigation Validation](#navigation-validation)
@@ -52,11 +53,31 @@ makine-okunur düğüm/bağlantı listeleri [docs/architecture/](docs/architectu
 | [SARA_Sistem_Mimarisi_temiz.png](docs/architecture/SARA_Sistem_Mimarisi_temiz.png) | Mimari diyagram (görsel) |
 | [SARA_Sistem_Mimarisi_temiz.pdf](docs/architecture/SARA_Sistem_Mimarisi_temiz.pdf) | Baskı/sunum sürümü |
 | [SARA_Sistem_Mimarisi_temiz.drawio](docs/architecture/SARA_Sistem_Mimarisi_temiz.drawio) | Düzenlenebilir draw.io kaynağı |
-| [SARA_Sistem_Mimarisi.csv](docs/architecture/SARA_Sistem_Mimarisi.csv) | 23 düğüm (katman + stil) |
-| [SARA_Baglanti_Listesi.csv](docs/architecture/SARA_Baglanti_Listesi.csv) | 28 bağlantı (kaynak→hedef→veri→tip) |
+| [SARA_Sistem_Mimarisi.csv](docs/architecture/SARA_Sistem_Mimarisi.csv) | 29 düğüm (katman + stil) |
+| [SARA_Baglanti_Listesi.csv](docs/architecture/SARA_Baglanti_Listesi.csv) | 38 bağlantı (kaynak→hedef→veri→tip) |
 
-> **Tutarlılık kontrolü (doğrulandı):** Bağlantı listesindeki 28 kenar uç noktasının tümü, düğüm
-> listesindeki 23 düğümden biridir — yetim referans yok (`python scripts/verify_validation_artifacts.py`).
+> **Tutarlılık kontrolü (doğrulandı):** Bağlantı listesindeki kenar uç noktalarının tümü, düğüm
+> listesindeki düğümlerden biridir — yetim referans yok (`python scripts/verify_validation_artifacts.py`).
+
+## Validation Scope vs Runtime Scope
+
+Bu repo bir **validasyon kanıt paketi**dir; tam runtime workspace'in yerine geçmez. Bu nedenle kontrol
+zinciri iki kapsamda okunmalıdır:
+
+| Kapsam | Kontrol zinciri | Bu paketteki kanıt |
+|---|---|---|
+| Validation / simulation | `control_backend:=ros`; `guidance_node` → `setpoint_controller` / `control_setpoint_node` → `/sara_uuv/cmd_vel` → `velocity_controller` → sim aktüatör topic'leri | `recording/telemetry.csv`, `docs/metrics/**`, `docs/figures/**`, `src/validation/**` |
+| Runtime / real vehicle | `guidance_node` → `control_setpoint_bridge_node` → `/control/setpoint` → Pixhawk/ArduPilot veya harici düşük seviye kontrolcü | Bu pakette doğrudan performans kanıtı yok; gerçek araç/ArduPilot performansı kapsam dışıdır |
+
+Adlandırma notları: mimari CSV'deki `ukf_node`, runtime sözleşmesindeki `ukf_filter_node_odom` için kısa
+etikettir. `safety_monitor_node` eski/yüksek seviye güvenlik etiketi olarak korunur; runtime sözleşmesindeki
+karşılığı `failsafe_manager_node` ve ana durum çıkışı `/auv/failsafe/status` olarak belgelenmiştir. Aşama-2
+fire runtime zinciri `stage2_fire_bt_node` → `/auv/fire/permission_candidate` → `fire_control_node` şeklinde
+ayrıdır; bu pakette izole fire-decision kanıtı hâlâ **Needs Evidence** durumundadır.
+
+Topic notu: `/dvl/raw` ham DVL ölçümüdür, `/dvl/quality_twist` kalite kapısından geçmiş canonical UKF
+girdisidir. Bazı eski/yardımcı mission runner kayıt listelerinde görülen `/dvl/twist` legacy DVL twist
+kaydıdır; curated validasyon metriklerinde canonical topic `/dvl/quality_twist` kullanılır.
 
 ### ROS 2 navigasyon/görev zinciri (tüm testlerde ortak)
 
@@ -90,7 +111,8 @@ ocean_current_node                       navigation_health_node (valid / degrade
 ## Validation Methodology
 
 - Tüm performans testleri **ROS kontrol zinciri** (`control_backend:=ros`) ile koşturulur. ArduPilot
-  hız/tutum kontrolü henüz kalibre edilmediğinden performans doğrulamasına **dahil edilmemiştir** (bilinçli kapsam).
+  hız/tutum kontrolü ve MAVLink/Pixhawk gerçek araç zinciri bu validasyon paketinde **doğrudan performans
+  kanıtı olarak sunulmaz** (bilinçli kapsam).
 - Her test Gazebo'da sıfırdan başlatılır → rosbag alınır → takımın analiz kodu RMSE/metrik üretir → Gazebo kapatılır.
 - **Bu depodaki figür ve metrikler**, takımın gerçek koşumlarından gelen ham `recording/telemetry.csv`
   dışa-aktarımlarından, takım analiz kodundaki aynı matematik ([src/validation/](src/validation/)) ile

@@ -23,9 +23,14 @@ tutumunu ve UKF kestirim tutarlılığını ölçmek.
 takımın [analyze_report_bag.py](../../src/validation/analyze_report_bag.py) koduyla GT ve UKF zaman
 serilerini hizalayarak konum, derinlik, hız ve yaw metriklerini çıkardı.
 
+Bu sayfa **validation/simulation** kapsamını raporlar: `guidance_node` çıktısı ROS sim kontrol zincirinde
+`/sara_uuv/cmd_vel` ve sim aktüatör topic'lerine gider. Runtime/gerçek araç zinciri
+`control_setpoint_bridge_node → /control/setpoint → Pixhawk/ArduPilot` olarak ayrıdır ve bu koşumda
+doğrudan performans kanıtı olarak kullanılmamıştır.
+
 ## Inputs
-`control_setpoint_node`, `velocity_controller`, `guidance_node`, UKF (`/odometry/ukf`), GT odometri ve
-final_validation gerçek telemetri kaydı.
+`control_setpoint_node` / `setpoint_controller`, `velocity_controller`, `guidance_node`, UKF
+(`/odometry/ukf`), GT odometri ve final_validation gerçek telemetri kaydı.
 
 ## Execution / Commands
 ```bash
@@ -65,7 +70,7 @@ gelir; bu sayfa yanal rota tutma başarısını değil, kontrol zinciri ve UKF/G
 
 ## Decision
 **PASS** — Derinlik RMSE 0.0012 m, yaw RMSE 0.022° ve hız RMSE 0.150 m/s seviyesinde kaldı. Test,
-ArduPilot arka ucu yerine ROS kontrol arka ucunu doğrular.
+ArduPilot/MAVLink arka ucu yerine ROS kontrol arka ucunu doğrular.
 
 ## Evidence Files
 - [docs/metrics/controller_tracking/summary.csv](../metrics/controller_tracking/summary.csv)
@@ -76,4 +81,5 @@ ArduPilot arka ucu yerine ROS kontrol arka ucunu doğrular.
 ## Limitations
 Mevcut özet, actuator saturasyonu veya ayrı PID iç hata kanallarını raporlamaz; final_validation içinde bu
 sayfada sunulabilecek izole actuator-range kanıtı yoktur. Ham rosbag/telemetry dosyaları repoya dahil
-edilmez.
+edilmez. `/control/setpoint` ve Pixhawk/ArduPilot gerçek araç performansı için bu pakette doğrudan kanıt
+yoktur.
