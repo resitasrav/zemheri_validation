@@ -1,0 +1,2 @@
+test,guidance_mode,decision,accepted,waypoint_count,cross_track_rmse_m,max_abs_cross_track_m,initial_cross_track_m,final_cross_track_m,heading_rmse_deg,final_distance_m,duration_sec
+guidance_waypoint,WAYPOINT,KABUL — waypoint rotası tamamlandı,True,4,0.5797398283118884,1.1815992824769848,0.0,1.1523101602961225,5.419215868642915,2.5380908953687267,70.541

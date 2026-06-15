@@ -1,0 +1,2 @@
+test,guidance_mode,decision,accepted,waypoint_count,cross_track_rmse_m,max_abs_cross_track_m,initial_cross_track_m,final_cross_track_m,heading_rmse_deg,final_distance_m,duration_sec
+guidance_los,LOS,KABUL — LOS rota eksenine yakınsadı,True,1,2.1582818388612517,4.973686897230755,-4.9736868971736365,0.0012854667234991624,3.6429723239333898,4.613660745154195,50.282000000000004

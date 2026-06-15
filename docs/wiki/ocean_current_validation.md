@@ -2,54 +2,71 @@
 
 [← README](../../README.md)
 
-## İçindekiler
+## Table of Contents
 - [Purpose](#purpose)
 - [Methodology](#methodology)
 - [Inputs](#inputs)
-- [Metrics](#metrics)
+- [Execution / Commands](#execution--commands)
+- [Logs](#logs)
 - [Results](#results)
+- [Figures](#figures)
 - [Decision](#decision)
 - [Evidence Files](#evidence-files)
 - [Limitations](#limitations)
 
 ## Purpose
-RL ve dayanıklılık senaryolarının dayandığı okyanus akıntısı servislerinin çağrılara doğru yanıt
-verdiğini ve gerçek etki ürettiğini doğrulamak.
+RL ve navigasyon dayanıklılığı senaryolarının dayandığı okyanus akıntısı servislerinin deterministik biçimde
+akıntı vektörü yayınladığını doğrulamak.
 
 ## Methodology
-8 servise programatik çağrı; servis dönüşleri ile ölçülen akıntı zaman serisinin karşılaştırılması.
+Okyanus akıntısı servisleri programatik olarak çağrıldı; `/ocean_current` zaman serisi kaydedildi ve
+[analyze_environment_validation.py](../../src/validation/analyze_environment_validation.py) ile özetlendi.
+Bu sayfa servis yayınını doğrular; RL sayfasındaki senaryo karşılaştırmalarıyla karıştırılmamalıdır.
 
 ## Inputs
-`ocean_current_node`, `metrics/ocean_current_service_timeseries.csv`.
+`ocean_current_node`, `/ocean_current` telemetrisi ve final_validation gerçek kayıtlarından üretilen
+`ocean_current_services` summary dosyaları.
 
-## Metrics
-| Servis | Sonuç |
-|---|:---:|
-| set_mode_constant | ✅ |
-| set_target | ✅ |
-| trigger_gust | ✅ |
-| schedule_event | ✅ |
-| clear_schedule | ✅ |
-| set_preset | ✅ |
-| load_built_in_scenario | ✅ |
-| reset_episode | ✅ |
+## Execution / Commands
+```bash
+python src/validation/run_final_validation.py --cases ocean_current_services
+python scripts/generate_validation_figures.py --results <final_validation/results> --cases ocean_current_services
+```
 
-**8 / 8** · Hedef akıntı `(0.4, 0.2, 0.0)` m/s; ölçülen ort. X≈0.34, Y≈0.05, Z≈0.006 m/s; anlık maks.
-büyüklük **0.557 m/s**.
+## Logs
+Özet metrik dosyaları:
+[summary.csv](../metrics/ocean_current_services/summary.csv) ·
+[summary.json](../metrics/ocean_current_services/summary.json).
 
 ## Results
-Sekiz servisin tamamı yanıt verdi; ölçülen akıntı zaman serisi servis komutlarıyla tutarlı. Akıntı
-düğümü esinti/dalgalanma ürettiği için anlık büyüklük 0.56 m/s'e kadar çıkıyor.
+| Metrik | Değer |
+|---|---:|
+| Örnek sayısı | 871 |
+| Ortalama X | 0.336 m/s |
+| Ortalama Y | 0.050 m/s |
+| Ortalama Z | 0.006 m/s |
+| Maks. büyüklük | 0.557 m/s |
+| Karar | KABUL |
 
-<img src="../../figures/ocean_current_service_activity.png" width="780">
+Ölçülen akıntı vektörü servis komutlarıyla tutarlı yayın yaptı. Bu test RL politika kabul kararı vermez;
+yalnızca akıntı altyapısının gerçek koşumda veri ürettiğini kanıtlar.
+
+## Figures
+<img src="../figures/ocean_current/ocean_current_service_activity.png" width="820">
+
+*Ocean current service: X/Y/Z bileşenleri ve toplam akıntı büyüklüğü zaman serisi.*
 
 ## Decision
-**PASS** — ortam akıntı altyapısı çalışıyor (RL/resilience senaryolarının temeli).
+**PASS** — Akıntı servisi gerçek telemetry koşumunda deterministik biçimde yayın yaptı; maksimum büyüklük
+0.557 m/s olarak ölçüldü.
 
 ## Evidence Files
-- [tests/07_ocean_current_services.md](../../tests/07_ocean_current_services.md)
-- [figures/ocean_current_service_activity.png](../../figures/ocean_current_service_activity.png) — 0 baytlık
-  orijinalin yerine kayıtlı CSV'den **yeniden üretildi** (4 panel: X/Y/Z + büyüklük).
+- [docs/metrics/ocean_current_services/summary.csv](../metrics/ocean_current_services/summary.csv)
+- [docs/figures/ocean_current/ocean_current_service_activity.png](../figures/ocean_current/ocean_current_service_activity.png)
+- [src/validation/analyze_environment_validation.py](../../src/validation/analyze_environment_validation.py)
+- [src/validation/report_test_runner.py](../../src/validation/report_test_runner.py)
 
 ## Limitations
-Diğer ham çıktılar (7 PNG · 11 CSV · 1 rosbag) bu bundle'da değildir.
+Bu sayfa akıntı servis yayınına odaklanır. `no_current`, `following_current`, `cross_current`,
+`diagonal_current`, `reverse_current` ve `hard_cross_current` politika performansı
+[RL Policy Validation](rl_policy_validation.md) sayfasında WIP olarak raporlanır.

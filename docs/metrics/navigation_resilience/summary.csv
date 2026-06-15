@@ -1,0 +1,2 @@
+test,raw_ukf_rmse_m,protected_ukf_rmse_m,oosm_ukf_rmse_m,raw_ukf_max_error_m,oosm_ukf_max_error_m,oosm_over_raw_rmse_ratio,oosm_over_raw_max_ratio,oosm_accepted,navigation_valid_ratio,navigation_degraded_ratio,decision
+navigation_resilience,1.1059480749992625,1.1064334718439446,1.3252267120299808,3.646422553397434,4.509774541411929,1.1982720906954556,1.2367668517215853,False,1.0,0.30785868781542897,İNCELENMELİ — OOSM hatayı sınırların dışında artırdı

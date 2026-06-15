@@ -2,50 +2,78 @@
 
 [← README](../../README.md)
 
-## İçindekiler
+## Table of Contents
 - [Purpose](#purpose)
 - [Methodology](#methodology)
 - [Inputs](#inputs)
-- [Metrics](#metrics)
+- [Execution / Commands](#execution--commands)
+- [Logs](#logs)
 - [Results](#results)
+- [Figures](#figures)
 - [Decision](#decision)
 - [Evidence Files](#evidence-files)
 - [Limitations](#limitations)
 
 ## Purpose
-Hız (0.8 m/s) ve derinlik (2 m) referansları verildiğinde setpoint/velocity kontrolcülerinin takip
-başarımını ölçmek.
+Hedef hız (0.8 m/s) ve hedef derinlik (2 m) altında kontrol zincirinin gerçekleşen hareketini, derinlik
+tutumunu ve UKF kestirim tutarlılığını ölçmek.
 
 ## Methodology
-`control_backend:=ros`, 55 s, warmup 5 s, mesafe 35 m, derinlik 2 m, hedef hız 0.8 m/s.
+`control_backend:=ros`, 35 m düz seyir, 2 m hedef derinlik ve 0.8 m/s hedef hız kullanıldı. Analiz,
+takımın [analyze_report_bag.py](../../src/validation/analyze_report_bag.py) koduyla GT ve UKF zaman
+serilerini hizalayarak konum, derinlik, hız ve yaw metriklerini çıkardı.
 
 ## Inputs
-`control_setpoint_node` (PID setpoint), `velocity_controller`, UKF state.
+`control_setpoint_node`, `velocity_controller`, `guidance_node`, UKF (`/odometry/ukf`), GT odometri ve
+final_validation gerçek telemetri kaydı.
 
-## Metrics
-| Metrik | Değer |
-|---|---:|
-| Örnek sayısı | 1478 |
-| Konum RMSE | 0.200 m |
-| Konum maks. hata | 1.129 m |
-| Derinlik RMSE | 0.0011 m |
-| Hız RMSE | 0.152 m/s |
-| Roll / Pitch RMSE | 0.006° / 0.005° |
-| Yaw RMSE / maks. | 0.011° / 0.026° |
+## Execution / Commands
+```bash
+python src/validation/run_final_validation.py --cases controller_tracking
+python scripts/generate_validation_figures.py --results <final_validation/results> --cases controller_tracking
+```
+
+## Logs
+Özet metrik dosyaları:
+[summary.csv](../metrics/controller_tracking/summary.csv) ·
+[summary.json](../metrics/controller_tracking/summary.json).
 
 ## Results
-Derinlik ve tutum (roll/pitch/yaw) hataları milimetre/yüzde-derece seviyesinde — kontrolcünün derinlik
-ve tutum tutuşu çok iyi. Büyük cross-track (6.59 m) komutla yapılan manevradan kaynaklanır; bu test
-**referans takibini** ölçer, cross-track'i değil.
+| Metrik | Değer |
+|---|---:|
+| Örnek sayısı | 1509 |
+| Süre | 50.265 s |
+| 3B konum RMSE | 0.201 m |
+| Maks. 3B hata | 1.134 m |
+| Derinlik RMSE | 0.0012 m |
+| Hız RMSE | 0.150 m/s |
+| Yaw RMSE / maks. | 0.022° / 0.048° |
+| İz boyu mesafe | 36.260 m |
+| Maks. cross-track | 6.587 m |
+
+Derinlik ve yaw kestirim hataları çok düşüktür. Maksimum cross-track değeri bu koşumda yapılan manevradan
+gelir; bu sayfa yanal rota tutma başarısını değil, kontrol zinciri ve UKF/GT tutarlılığını raporlar.
+
+## Figures
+<img src="../figures/controller/controller_tracking_trajectory_depth.png" width="900">
+
+*Controller tracking: GT ve UKF yatay rota karşılaştırması ile derinlik takibi.*
+
+<img src="../figures/controller/controller_tracking_error_speed.png" width="900">
+
+*Controller tracking: UKF 3B konum hatası ve toplam hız büyüklüğü; hedef seyir hızı korunuyor.*
 
 ## Decision
-**PASS** — referans takibi yüksek doğrulukta.
+**PASS** — Derinlik RMSE 0.0012 m, yaw RMSE 0.022° ve hız RMSE 0.150 m/s seviyesinde kaldı. Test,
+ArduPilot arka ucu yerine ROS kontrol arka ucunu doğrular.
 
 ## Evidence Files
-- [tests/02_controller_tracking.md](../../tests/02_controller_tracking.md)
-- Örnek figür: [depth_speed_tracking](../../figures/ornek_depth_speed_tracking.png)
+- [docs/metrics/controller_tracking/summary.csv](../metrics/controller_tracking/summary.csv)
+- [docs/figures/controller/](../figures/controller/)
+- [src/validation/analyze_report_bag.py](../../src/validation/analyze_report_bag.py)
+- [src/validation/report_test_runner.py](../../src/validation/report_test_runner.py)
 
 ## Limitations
-Hedef hız/derinlik/yaw referansına göre ayrı bir **kontrol-hatası** analizi (mevcut analiz aracı
-öncelikle GT/UKF doğruluğunu raporlar) bir sonraki geliştirme adımıdır. Ham çıktılar (14 PNG · 10 CSV ·
-1 rosbag) bu bundle'da değildir.
+Mevcut özet, actuator saturasyonu veya ayrı PID iç hata kanallarını raporlamaz; final_validation içinde bu
+sayfada sunulabilecek izole actuator-range kanıtı yoktur. Ham rosbag/telemetry dosyaları repoya dahil
+edilmez.

@@ -2,92 +2,95 @@
 
 [← README](../../README.md)
 
-> **This section validates a policy candidate / RL-style control candidate under multiple current
-> scenarios. It should not be presented as a fully trained SAC agent unless the corresponding training
-> checkpoints, training curves, and evaluation protocol are included.**
+> **This section validates a policy candidate / RL-style control candidate. It should not be presented as a fully trained SAC agent unless training checkpoints, training curves and the evaluation protocol are included.**
 >
-> Bu bölüm, eğitilmiş bir SAC ajanı kesinliğiyle değil; farklı akıntı senaryolarında test edilen bir
-> **policy candidate** doğrulaması olarak değerlendirilmelidir.
+> Bu bölüm, eğitilmiş SAC ajanı iddiası değil; farklı akıntı senaryolarında test edilmiş bir **policy
+> candidate** değerlendirmesidir.
 
-## İçindekiler
+## Table of Contents
 - [Purpose](#purpose)
 - [Methodology](#methodology)
 - [Inputs](#inputs)
-- [Metrics](#metrics)
+- [Execution / Commands](#execution--commands)
+- [Logs](#logs)
 - [Results](#results)
+- [Figures](#figures)
 - [Decision](#decision)
 - [Evidence Files](#evidence-files)
 - [Limitations](#limitations)
 
 ## Purpose
-Seçilen politika adayının tam ROS/Gazebo zinciri (UKF + guidance + kontrolcü) üzerinde 6 akıntı
-senaryosunda hedefe ilerleyip ilerlemediğini ölçmek.
+Seçilen politika adayının tam ROS/Gazebo zincirinde (UKF + guidance + kontrolcü) altı akıntı senaryosunda
+ilerleme, yanal hata, derinlik takibi ve navigation-valid durumunu ölçmek.
 
 ## Methodology
-6 senaryoluk episode matrisi. Her episode için Gazebo sıfırdan başlatılır, kayıt alınır, analiz yapılır,
-Gazebo kapatılır. UKF–GT konum hatası ham `recording/telemetry.csv` üzerinden hem **raw** hem
-**başlangıç-hizalı (aligned)** olarak yeniden hesaplanmıştır (teşhis paketi).
-
-| # | Senaryo | Akıntı (x, y, z) m/s | Ordinal şiddet |
-|---|---|---|:---:|
-| ep01 | no_current | (0.00, 0.00, 0.00) | 0 |
-| ep02 | following_current | (0.25, 0.00, 0.00) | 1 |
-| ep03 | cross_current | (0.00, 0.25, 0.00) | 2 |
-| ep04 | diagonal_current | (0.25, 0.20, 0.00) | 3 |
-| ep05 | reverse_current | (−0.20, 0.00, 0.00) | 4 |
-| ep06 | hard_cross_current | (0.00, 0.40, 0.00) | 5 |
-
-> **Ordinal şiddet**, senaryoların sıra etiketidir; fiziksel akıntı büyüklüğüyle birebir aynı değildir
-> (örn. diagonal'in büyüklüğü hard_cross'tan küçüktür). Robustness grafiğinde bu sıralama
-> *ordinal scenario severity* olarak kullanılır.
+Altı episode matrisi gerçek final_validation kayıtlarından analiz edildi. UKF-GT konum hatası ham
+`recording/telemetry.csv` üzerinden hem **raw** hem de **başlangıç-hizalı (aligned)** olarak bağımsız yeniden
+hesaplandı. Kabul kararı, takımın [rl_policy_validation.py](../../src/validation/rl_policy_validation.py)
+mantığındaki progress, depth RMSE, hız ve nav_valid eşiklerine göre yorumlandı.
 
 ## Inputs
-- [data/episodes/sara_best_episode.csv](../../data/episodes/sara_best_episode.csv) — tek episode (calm), 34 kolon, 662 adım.
+- [data/episodes/sara_best_episode.csv](../../data/episodes/sara_best_episode.csv) — calm episode özeti, 34 kolon, 662 adım.
 - [corrected_rl_ukf_summary_from_raw_telemetry.csv](../diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv)
 - [metrics_vs_raw_telemetry_ukf_span_check.csv](../diagnostics/rl_ukf/metrics_vs_raw_telemetry_ukf_span_check.csv)
+- [src/validation/rl_policy_validation.py](../../src/validation/rl_policy_validation.py)
 
-## Metrics
-| Senaryo | Raw UKF RMSE | Aligned UKF RMSE | Progress | Cross-track RMSE | Depth RMSE | nav_valid |
-|---|---:|---:|---:|---:|---:|---:|
-| no_current | 3.86 m | 0.73 m | 50.12 m | 0.54 m | 1.10 m | 1.0 |
-| following_current | 4.13 m | 0.16 m | 56.82 m | 0.42 m | 1.09 m | 1.0 |
-| cross_current | 4.01 m | 0.19 m | 53.77 m | 1.27 m | 1.21 m | 1.0 |
-| diagonal_current | 4.12 m | 0.27 m | 81.55 m | 0.81 m | 0.79 m | 1.0 |
-| reverse_current | 4.00 m | 0.09 m | 47.68 m | 0.34 m | 1.48 m | 1.0 |
-| hard_cross_current | 3.94 m | 0.16 m | 58.07 m | 4.79 m | 1.68 m | 1.0 |
+## Execution / Commands
+```bash
+python scripts/recompute_rl_ukf_from_telemetry.py <final_validation/results> --out out.csv
+python scripts/generate_rl_figures.py --results <final_validation/results>
+```
+
+## Logs
+Düzeltilmiş RL/UKF özetleri:
+[corrected summary](../diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv) ·
+[span check](../diagnostics/rl_ukf/metrics_vs_raw_telemetry_ukf_span_check.csv).
 
 ## Results
+| Senaryo | Progress | Cross-track RMSE | Depth RMSE | Raw UKF RMSE | Aligned UKF RMSE | max speed | nav_valid |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| no_current | 50.12 m | 0.54 m | 1.10 m | 3.86 m | 0.73 m | 1.03 m/s | 1.0 |
+| following_current | 56.82 m | 0.42 m | 1.09 m | 4.13 m | 0.16 m | 1.28 m/s | 1.0 |
+| cross_current | 53.77 m | 1.27 m | 1.21 m | 4.01 m | 0.19 m | 0.98 m/s | 1.0 |
+| diagonal_current | 81.55 m | 0.81 m | 0.79 m | 4.12 m | 0.27 m | 1.25 m/s | 1.0 |
+| reverse_current | 47.68 m | 0.34 m | 1.48 m | 4.00 m | 0.09 m | 0.83 m/s | 1.0 |
+| hard_cross_current | 58.07 m | 4.79 m | 1.68 m | 3.94 m | 0.16 m | 0.95 m/s | 1.0 |
 
+Kabul eşiği içinde kritik başarısızlık derinlik takibidir: tüm senaryolarda depth RMSE 0.79-1.68 m
+aralığında ve `0.35 m` eşiğinin üzerindedir. `reverse_current` ayrıca 50 m ilerleme altında kalır;
+`hard_cross_current` ise 4.79 m cross-track RMSE ile yanal hata açısından zayıftır.
+
+## Figures
 <img src="../figures/rl/rl_episode_comparison_matrix.png" width="900">
+
+*RL/policy candidate episode matrisi: progress, cross-track, depth RMSE ve UKF metrikleri birlikte.*
+
 <img src="../figures/rl/rl_current_robustness.png" width="700">
+
+*Akıntı senaryosu sıralamasına göre robustness görünümü; bu grafik policy candidate değerlendirmesidir.*
+
 <img src="../figures/rl/rl_trajectory_overlay.png" width="780">
 
-- Navigasyon altyapısı 6 senaryoda da geçerli kaldı (`nav_valid_ratio = 1.0`).
-- Aligned UKF–GT RMSE 0.09–0.73 m bandında — navigasyon/controller testleriyle tutarlı (UKF artefaktı
-  düzeltildi, bkz. [rl_ukf_diagnosis](rl_ukf_diagnosis.md)).
-- **Gerçek kabul kriteri** (`rl_policy_validation.py:300-305`): `progress ≥ 0.90·target` **ve**
-  `depth_rmse ≤ 0.35 m` **ve** `max_speed ≤ 2.5 m/s` **ve** `nav_valid ≥ 0.95`.
-  6 senaryoda da **derinlik RMSE 0.79–1.68 m (> 0.35 m)** olduğundan aday politika kabul eşiğini
-  sağlamadı → orijinal karar "BAŞARISIZ" (eşik altı). Bu, UKF artefaktından **bağımsız**, gerçek bir
-  derinlik-takip sonucudur.
-- **trajectory_overlay** artık ham telemetriden GT + UKF + referans hattını gösterir; "RL path" ayrı
-  bir kanal değildir — politikanın sürdüğü iz = Ground truth (figürde belirtilmiştir).
+*GT ve UKF rota overlay'i; politika izinin gerçek hareket karşılığı ground-truth rotadır.*
+
+<img src="../figures/rl/rl_ukf_raw_vs_aligned_rmse.png" width="780">
+
+*Raw ve başlangıç-hizalı UKF RMSE karşılaştırması; eski 30-46 m metrik artefaktı kullanılmaz.*
 
 ## Decision
-**WIP** — Zincir (Gazebo→sensör→UKF→guidance→kontrolcü) 6 senaryoda da çalıştı (`nav_valid = 1.0`),
-ancak aday politika **derinlik takibi kabul eşiğini** (RMSE ≤ 0.35 m) hiçbir senaryoda sağlamadı.
-Bu **zincirin değil aday politikanın** durumudur. Sonraki adım: aday politikayı eğitilmiş SAC ajanı ile
-değiştirmek (checkpoint + öğrenme eğrisi + değerlendirme protokolü ile) ve matrisi per-episode raporlamak.
+**WIP** — Zincir altı senaryoda da çalıştı ve `nav_valid_ratio=1.0` kaldı. Ancak aday politika hiçbir
+senaryoda derinlik RMSE kabul eşiğini sağlamadı; bu nedenle "trained SAC agent PASS" gibi sunulmamalıdır.
 
 ## Evidence Files
-- [tests/10_rl_policy.md](../../tests/10_rl_policy.md)
-- [docs/wiki/rl_ukf_diagnosis.md](rl_ukf_diagnosis.md) — UKF kök neden analizi
-- [scripts/generate_rl_figures.py](../../scripts/generate_rl_figures.py) — figür üreticisi
+- [docs/diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv](../diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv)
+- [docs/diagnostics/rl_ukf/metrics_vs_raw_telemetry_ukf_span_check.csv](../diagnostics/rl_ukf/metrics_vs_raw_telemetry_ukf_span_check.csv)
+- [docs/figures/rl/](../figures/rl/)
+- [scripts/recompute_rl_ukf_from_telemetry.py](../../scripts/recompute_rl_ukf_from_telemetry.py)
+- [scripts/generate_rl_figures.py](../../scripts/generate_rl_figures.py)
+- [src/validation/rl_policy_validation.py](../../src/validation/rl_policy_validation.py)
+- [RL UKF Diagnosis](rl_ukf_diagnosis.md)
 
 ## Limitations
-- Eğitilmiş SAC kanıtı (checkpoint, öğrenme eğrisi, değerlendirme protokolü, seed, env config,
-  hiperparametreler) **bu depoda yoktur** → "trained RL agent" ifadesi kullanılmaz.
-- Per-episode ham `recording/telemetry.csv` ve `metrics/rl_policy_timeseries.csv` dosyaları bu bundle'da
-  değildir; metrikler teşhis paketinin düzeltilmiş özetinden alınmıştır.
-- Önceki paketteki runner her episode'u aynı `rl_policy` satırına yazıp üzerine bindiriyordu
-  (per-episode karşılaştırma kaybı) — bkz. [rl_tools/README_RL.md](../../rl_tools/README_RL.md).
+Eğitim checkpoint'i, öğrenme eğrisi, seed/env config ve resmi değerlendirme protokolü bu depoda yoktur.
+Per-episode ham telemetry büyük olduğu için repoya alınmaz; sunulan metrikler curated diagnosis ve yeniden
+hesap CSV'lerinden gelir.
