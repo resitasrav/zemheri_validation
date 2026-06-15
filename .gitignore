@@ -79,3 +79,5 @@ temp/
 !reports/**/*.mp4
 !notebooks/**/*.ipynb
 !scripts/**/*.py
+
+CLAUDE.md
