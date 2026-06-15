@@ -40,10 +40,10 @@ reward_safety, reward_terminal
 
 | Veri | Neden yok | Etkisi |
 |---|---|---|
-| Per-test rosbag + CSV + PNG (nav/guidance/controller/FSM/BT/sensor) | Boyut | Bu metrikler depodan bağımsız yeniden hesaplanamaz; analiz manifestlerinden taşınmıştır. |
-| RL `recording/telemetry.csv` (per episode) | `final_validation` arşivi bundle'da değil | UKF RMSE bağımsız yeniden hesaplanamaz; teşhis paketinin çıktısı kullanılır. |
-| RL `metrics/rl_policy_timeseries.csv` | aynı | Donmuş kolon yalnızca span-check üzerinden doğrulanır. |
-| RL metrics export scripti | repoda yok | Hatalı kod satırı gösterilemez. |
+| Per-test rosbag (`.db3`) + büyük `telemetry.csv` (nav/guidance/controller/FSM/BT/sensor) | Boyut (~30–80 MB/dosya) | Özet PNG/CSV jüri için yeterli; ham kayıt repoya alınmaz. |
+| RL `recording/telemetry.csv` (per episode, ~50–65 MB) | Boyut | UKF RMSE bu dosyalardan **bağımsız yeniden hesaplandı**; sonuç repodadır (verification CSV). |
+| RL `metrics/rl_policy_timeseries.csv` | Boyut | Donmuş-kolon span-check ile doğrulandı; ham dosya repoya alınmaz. |
+| RL metrics export scripti | **repoda var** | Hatalı sürüm `legacy/rl_policy_validation_BUGGY.py`, düzeltilmiş sürüm `rl_policy_validation_fixed.py`. |
 
 ## Doğrulanan episode değerleri
 `python scripts/verify_validation_artifacts.py` ile dosyadan doğrulanmıştır:

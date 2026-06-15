@@ -63,17 +63,21 @@ Gazebo kapatılır. UKF–GT konum hatası ham `recording/telemetry.csv` üzerin
 <img src="../figures/rl/rl_trajectory_overlay.png" width="780">
 
 - Navigasyon altyapısı 6 senaryoda da geçerli kaldı (`nav_valid_ratio = 1.0`).
-- Aligned UKF–GT RMSE 0.09–0.73 m bandında — navigasyon/controller testleriyle tutarlı.
-- Aday politika çoğu senaryoda hedefe oturdu; **iki uyarı**: `reverse_current` ilerlemesi 47.68 m
-  (50 m hedefin altında) ve `hard_cross_current` cross-track RMSE'si 4.79 m (güçlü yanal akıntıda
-  geçici sapma).
-- **trajectory_overlay** yalnızca tek episode'un (calm) sim-state izini gösterir; bu bundle'da ayrı
-  GT/UKF/RL kanalları olmadığından 4 ayrı iz çizilemez. Bu durum figürde ve burada açıkça belirtilmiştir.
+- Aligned UKF–GT RMSE 0.09–0.73 m bandında — navigasyon/controller testleriyle tutarlı (UKF artefaktı
+  düzeltildi, bkz. [rl_ukf_diagnosis](rl_ukf_diagnosis.md)).
+- **Gerçek kabul kriteri** (`rl_policy_validation.py:300-305`): `progress ≥ 0.90·target` **ve**
+  `depth_rmse ≤ 0.35 m` **ve** `max_speed ≤ 2.5 m/s` **ve** `nav_valid ≥ 0.95`.
+  6 senaryoda da **derinlik RMSE 0.79–1.68 m (> 0.35 m)** olduğundan aday politika kabul eşiğini
+  sağlamadı → orijinal karar "BAŞARISIZ" (eşik altı). Bu, UKF artefaktından **bağımsız**, gerçek bir
+  derinlik-takip sonucudur.
+- **trajectory_overlay** artık ham telemetriden GT + UKF + referans hattını gösterir; "RL path" ayrı
+  bir kanal değildir — politikanın sürdüğü iz = Ground truth (figürde belirtilmiştir).
 
 ## Decision
-**WIP** — Zincir (Gazebo→sensör→UKF→guidance→kontrolcü) çalışıyor; aday politika güçlü yanal akıntıda
-ve reverse senaryosunda kabul eşiğini henüz sağlamıyor. Bu **zincirin değil aday politikanın** durumudur.
-Sonraki adım: aday politikayı eğitilmiş SAC ajanı ile değiştirmek ve matrisi per-episode raporlamak.
+**WIP** — Zincir (Gazebo→sensör→UKF→guidance→kontrolcü) 6 senaryoda da çalıştı (`nav_valid = 1.0`),
+ancak aday politika **derinlik takibi kabul eşiğini** (RMSE ≤ 0.35 m) hiçbir senaryoda sağlamadı.
+Bu **zincirin değil aday politikanın** durumudur. Sonraki adım: aday politikayı eğitilmiş SAC ajanı ile
+değiştirmek (checkpoint + öğrenme eğrisi + değerlendirme protokolü ile) ve matrisi per-episode raporlamak.
 
 ## Evidence Files
 - [tests/10_rl_policy.md](../../tests/10_rl_policy.md)

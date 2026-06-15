@@ -1,7 +1,17 @@
+# ─────────────────────────────────────────────────────────────
+# SARA Validation Suite — jüri teslimi .gitignore
+# Amaç: ham/büyük/geçici dosyaları dışarıda tut; sadece curated
+# kanıt (özet CSV/PNG, Markdown, HTML, scriptler, küçük video) kalsın.
+# ─────────────────────────────────────────────────────────────
+
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -9,8 +19,63 @@ __pycache__/
 # OS / editor
 .DS_Store
 Thumbs.db
+.vscode/
+.idea/
 
-# Temp / backup / generated scratch
+# Temporary files
 *.tmp
+*.temp
 *.bak
-*~
+*.old
+*.log
+*.out
+
+# Archives / handoff bundles (ham veri arşivleri repoya girmez)
+*.zip
+*.rar
+*.7z
+*.tar
+*.tar.gz
+*.bundle
+
+# ROS / colcon build outputs
+build/
+install/
+log/
+logs/
+
+# Gazebo / simulation cache
+.gz/
+gazebo_models/
+*.db
+
+# Rosbag ve ham/ağır kayıtlar
+*.bag
+*.db3
+*.mcap
+rosbag2_*/
+recording/
+recordings/
+raw_recordings/
+
+# Büyük ham telemetry dökümleri
+raw/
+raw_data/
+tmp/
+temp/
+
+# Videolar: varsayılan yok say; yalnızca reports/ altındaki curated olanı tut
+*.mp4
+!reports/*.mp4
+
+# Curated doğrulama artefaktlarını KORU
+!data/**/*.csv
+!docs/**/*.csv
+!docs/**/*.png
+!docs/**/*.pdf
+!docs/**/*.drawio
+!reports/**/*.html
+!reports/**/*.png
+!reports/**/*.mp4
+!notebooks/**/*.ipynb
+!scripts/**/*.py

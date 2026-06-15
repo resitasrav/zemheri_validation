@@ -56,24 +56,33 @@ kurtarma. Makine-okunur kaynak: `docs/architecture/SARA_Sistem_Mimarisi.csv` (23
   47.68 m (<50 m hedef) ve `hard_cross_current` cross-track RMSE 4.79 m olduğundan genel durum **WIP**.
 
 ## UKF-RL Diagnosis Summary
-- Eski RL metrik CSV'lerinde (`metrics/rl_policy_timeseries.csv`) UKF kolonları (`x_ukf`,`y_ukf`,`z_ukf`)
-  episode boyunca **sabit (span ≈ 0)** kalmış olabilir.
-- Ham `recording/telemetry.csv` içinde `/odometry/ukf` **normal ilerliyor** (x span ≈ 50–81 m).
-- Bu yüzden eski **30–46 m UKF RMSE** değerleri doğrudan UKF çökmesi olarak yorumlanmamalıdır; bu bir
-  **analiz/export artefaktıdır.**
-- Ham telemetriden yeniden hesaplanan **başlangıç-hizalı** UKF-GT RMSE ≈ **0.09–0.73 m** bandında
-  (diğer testlerle tutarlı).
-- **Doğrulama durumu:** Semptom ve kök-neden sınıfı `metrics_vs_raw_telemetry_ukf_span_check.csv`
-  üzerinden depo içinde doğrulandı. Ham telemetry ve üretici script depoda **olmadığından** hatalı kod
-  satırı gösterilemiyor; README'ye yalnızca doğrulanmış sonuç yazıldı. Detay:
-  `docs/wiki/rl_ukf_diagnosis.md`.
+- **Kök neden bulundu ve düzeltildi (kod seviyesinde, `final_validation` arşivinden doğrulandı).**
+- Üretilen gerçek `metrics/rl_policy_timeseries.csv`'de UKF kolonları (`x_ukf/y_ukf/z_ukf`) episode
+  boyunca **donmuş (span = 0)**; ham `recording/telemetry.csv`'de `/odometry/ukf` 50–81 m ilerliyor.
+- **Hatalı kod:** `rl_policy_validation.py` `build_timeline()` içinde `ukf` DataFrame'i başlangıç-zamanı
+  normalizasyonundan önce kopyalanıyor ve normalize edilmiyor → `merge_asof(nearest)` tüm UKF değerlerini
+  ilk örneğe sabitliyor → donmuş kolon → sahte 30–46 m RMSE.
+- **Düzeltme:** tek satır (`ukf["t"] -= start`) — `docs/diagnostics/rl_ukf/rl_policy_validation_fixed.py`.
+  Hatalı orijinal `docs/diagnostics/rl_ukf/legacy/` altında "old artifact" olarak etiketli.
+- **Bağımsız doğrulama:** `scripts/recompute_rl_ukf_from_telemetry.py` ham telemetriden yeniden hesapladı;
+  başlangıç-hizalı UKF-GT RMSE ≈ **0.09–0.73 m** (teşhis paketiyle eşleşiyor, diğer testlerle tutarlı).
+- **Karar üzerine etkisi yok:** accept/reject kriteri (`rl_policy_validation.py:300-305`) UKF konum
+  hatasını kullanmaz; derinlik RMSE ≤ 0.35 m vb. bakar. 6 senaryoda da derinlik RMSE 0.79–1.68 m > 0.35
+  → aday politika gerçekten eşik altı (UKF artefaktından bağımsız).
+- Detay: `docs/wiki/rl_ukf_diagnosis.md`.
 
 ## Important Files
-- `scripts/verify_validation_artifacts.py` — teslim öncesi tüm tutarlılık kontrolleri (30 kontrol).
-- `scripts/generate_rl_figures.py` — RL figürlerini düzeltilmiş özet CSV'den üretir.
+- `scripts/verify_validation_artifacts.py` — teslim öncesi tüm tutarlılık kontrolleri.
+- `scripts/generate_rl_figures.py` — RL figürleri (trajectory overlay için opsiyonel `--results`).
+- `scripts/recompute_rl_ukf_from_telemetry.py` — ROS-bağımsız UKF RMSE yeniden hesabı (harici results).
 - `data/episodes/sara_best_episode.csv` — doğrulanan tek-episode telemetrisi.
-- `docs/diagnostics/rl_ukf/` — UKF teşhisinin tüm kanıtı.
+- `docs/diagnostics/rl_ukf/` — UKF teşhisi: corrected + verification CSV, span-check, fixed exporter,
+  `legacy/` (buggy exporter + eski değerler).
 - `sim/sara_sedaa.py` — RL/sim ortamı (kütle = 15.8454 kg, satır 74).
+
+> **Kaynak veri:** `final_validation.zip` (235 MB, repo dışı) — 6 RL episode'unun ham
+> `recording/telemetry.csv` + `metrics/` + test kodları. Repoya YALNIZCA küçük curated özetler alındı;
+> ham `.db3`/büyük telemetry `.gitignore` ile dışarıda.
 
 ## How to Reproduce
 ```bash
@@ -111,9 +120,12 @@ python sim/sara_sedaa.py                           # RL/sim deneyleri (seed=42, 
 - Fire decision logic izole test edilmedi.
 - ArduPilot kontrol arka ucu performans doğrulamasına dahil değil.
 
-## Commit and Push Notes
-- Branch: `final-sara-wiki-rl-diagnosis`. **Main'e doğrudan push YOK.**
-- Push öncesi `scripts/verify_validation_artifacts.py` çıkışı **0** olmalı; değilse push etme.
-- Büyük dosya: `reports/sara_mission_video.mp4` ≈ 0.12 MB (GitHub limitinin çok altında, LFS gerekmez).
-- Yeni `final_validation` arşivi veya RL üretici script eklenirse: ham telemetriden bağımsız
-  yeniden hesaplama yap, hatalı satırı düzelt, eski metrikleri `legacy/` altında etiketle.
+## Commit Notes
+- Bu repo **jüri incelemesi** için hazırlanmıştır; RL sonuçları **policy candidate validation**
+  olarak sunulur (eğitilmiş SAC değil).
+- Branch: `final-sara-wiki-rl-diagnosis`. **Main'e dokunulmadı.**
+- **Push YAPILMADI ve YAPILMAYACAK — kullanıcı kendisi pushlayacaktır.** Remote değiştirilmedi.
+- Push öncesi `scripts/verify_validation_artifacts.py` çıkışı **0** olmalı.
+- `.gitignore` ham/büyük/arşiv dosyaları (`*.zip`, `*.rar`, `*.bundle`, `*.db3`, `recording/`,
+  `build/`, `install/`, `log/`) repo dışında tutar. `reports/sara_mission_video.mp4` ≈ 0.12 MB
+  curated istisnadır (`!reports/*.mp4`).

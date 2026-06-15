@@ -15,7 +15,7 @@ TEKNOFEST 2026 — Su Altı Roket Yarışması · Hazırlık tarihi: 15 Haziran 
 
 - [System Architecture](#system-architecture)
 - [Validation Methodology](#validation-methodology)
-- [Test Matrix](#test-matrix)
+- [Test Inventory](#test-inventory)
 - [Navigation Validation](#navigation-validation)
 - [Guidance Validation](#guidance-validation)
 - [Controller Validation](#controller-validation)
@@ -23,6 +23,7 @@ TEKNOFEST 2026 — Su Altı Roket Yarışması · Hazırlık tarihi: 15 Haziran 
 - [Fire Behavior Tree Validation](#fire-behavior-tree-validation)
 - [Ocean Current Validation](#ocean-current-validation)
 - [RL Policy Validation](#rl-policy-validation)
+- [RL UKF Diagnosis](#rl-ukf-diagnosis)
 - [Results Summary](#results-summary)
 - [Raw Data](#raw-data)
 - [Reproducibility](#reproducibility)
@@ -112,10 +113,11 @@ ocean_current_node                       navigation_health_node (valid / degrade
 
 ---
 
-## Test Matrix
+## Test Inventory
 
-Kanıt sütunundaki ⓛ = ham rosbag/CSV/PNG bu **dokümantasyon bundle'ında yok**; metrik ilgili
-test analiz sayfasından taşınmıştır. ✓ = kanıt dosyası bu depoda mevcuttur.
+Kanıt sütunundaki ⓛ = ham rosbag/CSV/PNG bu **dokümantasyon bundle'ında yok** (`final_validation`
+arşivinde mevcut); metrik ilgili test analiz sayfasından taşınmıştır. ✓ = kanıt dosyası bu depoda
+mevcuttur.
 
 | Layer | Test | Evidence | Status |
 |---|---|---|---|
@@ -336,51 +338,69 @@ RMSE değerinin kök nedenini denetlemek.
 
 ### Methodology
 6 senaryoluk episode matrisi (`no_current` … `hard_cross_current`). UKF–GT konum hatası hem **raw**
-hem **başlangıç-hizalı (aligned)** olarak ham `recording/telemetry.csv` kayıtlarından yeniden
-hesaplanmıştır (teşhis paketi). Figürler [scripts/generate_rl_figures.py](scripts/generate_rl_figures.py)
-ile düzeltilmiş özet CSV'den üretilir.
+hem **başlangıç-hizalı (aligned)** olarak ham `recording/telemetry.csv` kayıtlarından **bu depodaki
+ROS-bağımsız script ile bağımsız** yeniden hesaplanmıştır
+([scripts/recompute_rl_ukf_from_telemetry.py](scripts/recompute_rl_ukf_from_telemetry.py)). Figürler
+[scripts/generate_rl_figures.py](scripts/generate_rl_figures.py) ile üretilir.
 
 ### Inputs
 - [data/episodes/sara_best_episode.csv](data/episodes/sara_best_episode.csv) — tek episode (calm), 34 kolon, 662 adım.
 - [docs/diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv](docs/diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv)
-- [docs/diagnostics/rl_ukf/metrics_vs_raw_telemetry_ukf_span_check.csv](docs/diagnostics/rl_ukf/metrics_vs_raw_telemetry_ukf_span_check.csv)
+- [docs/diagnostics/rl_ukf/recomputed_rl_ukf_from_telemetry_verification.csv](docs/diagnostics/rl_ukf/recomputed_rl_ukf_from_telemetry_verification.csv) — bağımsız doğrulama.
+- Ham `final_validation/results/*/recording/telemetry.csv` (harici, repoda değil).
 
 ### Results
 
-**Düzeltilmiş UKF–GT RMSE (ham telemetriden, başlangıç hizalı):**
+**Düzeltilmiş UKF–GT RMSE (ham telemetriden, başlangıç hizalı) ve kabul belirleyici derinlik RMSE:**
 
-| Senaryo | Metrics UKF RMSE (eski) | Raw RMSE | Aligned RMSE | Progress | Cross-track RMSE |
-|---|---:|---:|---:|---:|---:|
-| no_current | 30.34 m | 3.86 m | **0.73 m** | 50.12 m | 0.54 m |
-| following_current | 36.98 m | 4.13 m | **0.16 m** | 56.82 m | 0.42 m |
-| cross_current | 31.91 m | 4.01 m | **0.19 m** | 53.77 m | 1.27 m |
-| diagonal_current | 46.03 m | 4.12 m | **0.27 m** | 81.55 m | 0.81 m |
-| reverse_current | 32.88 m | 4.00 m | **0.09 m** | 47.68 m | 0.34 m |
-| hard_cross_current | 35.09 m | 3.94 m | **0.16 m** | 58.07 m | 4.79 m |
+| Senaryo | Eski (buggy) | Raw RMSE | Aligned RMSE | Progress | Cross-track RMSE | Depth RMSE | nav_valid |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| no_current | 30.34 m | 3.86 m | **0.73 m** | 50.12 m | 0.54 m | 1.10 m | 1.0 |
+| following_current | 36.98 m | 4.13 m | **0.16 m** | 56.82 m | 0.42 m | 1.09 m | 1.0 |
+| cross_current | 31.91 m | 4.01 m | **0.19 m** | 53.77 m | 1.27 m | 1.21 m | 1.0 |
+| diagonal_current | 46.03 m | 4.12 m | **0.26 m** | 81.55 m | 0.81 m | 0.79 m | 1.0 |
+| reverse_current | 32.88 m | 4.00 m | **0.09 m** | 47.68 m | 0.34 m | 1.48 m | 1.0 |
+| hard_cross_current | 35.09 m | 3.94 m | **0.16 m** | 58.07 m | 4.79 m | 1.68 m | 1.0 |
 
 <img src="docs/figures/rl/rl_episode_comparison_matrix.png" width="900">
 <img src="docs/figures/rl/rl_ukf_raw_vs_aligned_rmse.png" width="780">
 <img src="docs/figures/rl/rl_current_robustness.png" width="700">
 <img src="docs/figures/rl/rl_trajectory_overlay.png" width="780">
 
-> **UKF kök neden (doğrulandı):** İlk RL metriklerinde raporlanan ~30–46 m UKF konum RMSE değerleri,
-> üretilen `metrics/rl_policy_timeseries.csv` dosyasında UKF kolonlarının (`x_ukf`,`y_ukf`,`z_ukf`)
-> episode boyunca **güncellenmemiş (donmuş, span≈0)** olmasından kaynaklanır; oysa aynı episode'un ham
-> `/odometry/ukf` kaydı 50–81 m boyunca normal ilerler. Ham telemetriden yeniden hesaplanan
-> **başlangıç-hizalı** UKF-GT RMSE değerleri **0.09–0.73 m** bandındadır ve diğer navigasyon/controller
-> testleriyle (≈0.82 m / ≈0.20 m) tutarlıdır. Bu nedenle yüksek RMSE, gerçek bir UKF çökmesi değil,
-> bir **analiz/export artefaktı** olarak ele alınmıştır. Tam teşhis: [docs/wiki/rl_ukf_diagnosis.md](docs/wiki/rl_ukf_diagnosis.md).
->
-> **Sınır (dürüstlük):** Bu kanıt, teşhis paketinin span-check çıktısıyla **doğrulanmıştır**
-> (metrics span≈0 vs raw span≈50–81 m). Donmuş kolonu üreten **kaynak script bu depoda mevcut
-> değildir**; bu yüzden hatalı kod satırı gösterilememektedir — yalnızca semptom ve kök-neden sınıfı
-> dosyalardan ispatlanmıştır.
+> **UKF kök neden (koddan + telemetriden doğrulandı):** İlk RL metriklerindeki ~30–46 m UKF konum
+> RMSE, exporter (`rl_policy_validation.py`) içindeki bir **zaman-tabanı uyuşmazlığından**
+> kaynaklanır: `ukf` DataFrame'i başlangıç-zamanı normalizasyonundan önce kopyalanır ve normalize
+> edilmez; `merge_asof(nearest)` bu yüzden tüm UKF değerlerini **ilk örneğe sabitler** (donmuş kolon,
+> span≈0). Üretilmiş gerçek `rl_policy_timeseries.csv`'de `x_ukf` span = 0 iken ham `/odometry/ukf`
+> 50–81 m ilerler. Bağımsız yeniden hesapta **başlangıç-hizalı** UKF-GT RMSE **0.09–0.73 m** çıkar —
+> diğer testlerle tutarlı. Hata düzeltildi (tek satır):
+> [rl_policy_validation_fixed.py](docs/diagnostics/rl_ukf/rl_policy_validation_fixed.py). Eski hatalı
+> değerler [legacy/](docs/diagnostics/rl_ukf/legacy/) altında "old analysis artifact" olarak
+> etiketlenmiştir. Tam teşhis: [RL UKF Diagnosis](#rl-ukf-diagnosis).
 
 ### Decision
-**WIP** — Navigasyon altyapısı 6 senaryoda da geçerli kaldı (`nav_valid_ratio = 1.0`). Aday politika
-çoğu senaryoda hedefe oturdu; ancak `reverse_current` ilerlemesi 47.68 m (<50 m hedef) ve
-`hard_cross_current` cross-track RMSE'si 4.79 m olduğundan, **aday politika** olarak işaretlenmiştir.
-Bu sonuç **zincirin değil, aday politikanın** eşik durumunu yansıtır.
+**WIP** — Zincir 6 senaryoda da çalıştı (`nav_valid_ratio = 1.0`). Ancak aday politikanın gerçek kabul
+kriteri (`progress ≥ 0.90·hedef` **ve** `derinlik RMSE ≤ 0.35 m` **ve** `hız ≤ 2.5 m/s` **ve**
+`nav_valid ≥ 0.95`) hiçbir senaryoda sağlanmadı: derinlik RMSE 0.79–1.68 m (> 0.35 m). Bu, UKF
+artefaktından **bağımsız**, aday politikanın gerçek bir derinlik-takip sonucudur. Sonuç **zincirin
+değil, aday politikanın** durumudur.
+
+---
+
+## RL UKF Diagnosis
+
+Tam teşhis: [docs/wiki/rl_ukf_diagnosis.md](docs/wiki/rl_ukf_diagnosis.md)
+
+| Konu | Bulgu |
+|---|---|
+| Belirti | RL `metrics/rl_policy_timeseries.csv`'de `x_ukf/y_ukf/z_ukf` donmuş (span = 0). |
+| Karşıt kanıt | Ham `recording/telemetry.csv`'de `/odometry/ukf` 50–81 m ilerliyor. |
+| Kök neden (kod) | `rl_policy_validation.py`: `ukf` kopyası `start` ile normalize edilmemiş → `merge_asof(nearest)` tüm UKF'i ilk örneğe sabitliyor. |
+| Eski (hatalı) | 30.34 / 36.98 / 31.91 / 46.03 / 32.88 / 35.09 m → **kullanılmıyor**, `legacy/` altında. |
+| Düzeltilmiş (aligned) | 0.73 / 0.16 / 0.19 / 0.26 / 0.09 / 0.16 m → diğer testlerle tutarlı. |
+| Düzeltme | [rl_policy_validation_fixed.py](docs/diagnostics/rl_ukf/rl_policy_validation_fixed.py) (tek satır: `ukf["t"] -= start`). |
+| Bağımsız doğrulama | [scripts/recompute_rl_ukf_from_telemetry.py](scripts/recompute_rl_ukf_from_telemetry.py) → [verification CSV](docs/diagnostics/rl_ukf/recomputed_rl_ukf_from_telemetry_verification.csv). |
+| Karar üzerine etkisi | Yok — accept/reject kararı derinlik RMSE'ye bağlıdır, UKF konum hatasına değil. |
 
 ---
 
@@ -398,7 +418,7 @@ Bu sonuç **zincirin değil, aday politikanın** eşik durumunu yansıtır.
 | BT | Stage 2 | PASS | cross-track 0.43 m |
 | BT | Fire decision | Needs Evidence | izole ateşleme-karar testi yok |
 | Ocean Current | Services | PASS | 8/8 servis |
-| RL | Policy candidate | WIP | aligned UKF RMSE 0.09–0.73 m; aday politika eşik-altı senaryolar |
+| RL | Policy candidate | WIP | aligned UKF RMSE 0.09–0.73 m (düzeltildi); derinlik RMSE 0.79–1.68 m > 0.35 m eşiği → aday eşik altı |
 
 ---
 
@@ -411,12 +431,13 @@ Ayrıntılı indeks: [docs/wiki/raw_data_index.md](docs/wiki/raw_data_index.md)
 | En iyi episode (34 kolon, 662 adım) | [data/episodes/sara_best_episode.csv](data/episodes/sara_best_episode.csv) | ✓ |
 | Düzeltilmiş RL UKF özeti | [docs/diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv](docs/diagnostics/rl_ukf/corrected_rl_ukf_summary_from_raw_telemetry.csv) | ✓ |
 | UKF span-check (donmuş-kolon kanıtı) | [docs/diagnostics/rl_ukf/metrics_vs_raw_telemetry_ukf_span_check.csv](docs/diagnostics/rl_ukf/metrics_vs_raw_telemetry_ukf_span_check.csv) | ✓ |
+| RL UKF bağımsız doğrulama | [docs/diagnostics/rl_ukf/recomputed_rl_ukf_from_telemetry_verification.csv](docs/diagnostics/rl_ukf/recomputed_rl_ukf_from_telemetry_verification.csv) | ✓ |
+| Hatalı + düzeltilmiş exporter | [docs/diagnostics/rl_ukf/legacy/](docs/diagnostics/rl_ukf/legacy/) · [rl_policy_validation_fixed.py](docs/diagnostics/rl_ukf/rl_policy_validation_fixed.py) | ✓ |
 | Mimari düğüm/bağlantı CSV'leri | [docs/architecture/](docs/architecture/) | ✓ |
 | Görev raporu (HTML) | [reports/sara_mission_report.html](reports/sara_mission_report.html) | ✓ |
 | Episode özet/görsel | [reports/sara_best_episode.png](reports/sara_best_episode.png) · [reports/sara_episode_summary.png](reports/sara_episode_summary.png) | ✓ |
 | Görev videosu | [reports/sara_mission_video.mp4](reports/sara_mission_video.mp4) | ✓ |
-| Per-test ham rosbag/CSV/PNG | (analiz manifestlerinde) | ✗ boyut nedeniyle |
-| RL ham `recording/telemetry.csv` | (final_validation arşivi) | ✗ bu bundle'da yok |
+| Per-test ham rosbag (.db3) / büyük telemetry.csv | `final_validation` arşivi | ✗ büyük/ham — repoya alınmaz |
 
 ---
 
@@ -426,10 +447,13 @@ Ayrıntılı indeks: [docs/wiki/raw_data_index.md](docs/wiki/raw_data_index.md)
 # 1) Doğrulama artefaktlarını denetle (linkler, CSV şeması, metrikler, tutarlılık)
 python scripts/verify_validation_artifacts.py
 
-# 2) RL figürlerini düzeltilmiş özet CSV'den yeniden üret
-python scripts/generate_rl_figures.py
+# 2) RL UKF RMSE'yi ham telemetriden bağımsız yeniden hesapla (harici results klasörü gerekir)
+python scripts/recompute_rl_ukf_from_telemetry.py <final_validation/results> --out out.csv
 
-# 3) SARA RL/sim deneylerini yeniden koştur (deterministik: seed=42, 16 episode)
+# 3) RL figürlerini üret (trajectory overlay için opsiyonel --results)
+python scripts/generate_rl_figures.py [--results <final_validation/results>]
+
+# 4) SARA RL/sim deneylerini yeniden koştur (deterministik: seed=42, 16 episode)
 #    not: notebook sara_sedaa.py ve sara_best_episode.csv'yi çalışma dizininde bekler
 jupyter notebook notebooks/sara_rl_validation.ipynb
 #    veya doğrudan:  python sim/sara_sedaa.py
@@ -443,11 +467,13 @@ jupyter notebook notebooks/sara_rl_validation.ipynb
 
 ## Known Limitations
 
-1. **Ham per-test çıktıları bu bundle'da yok.** Navigation/Guidance/Controller/FSM/BT/Sensor
-   metrikleri test analiz manifestlerinden taşınmıştır; bu deposundan bağımsız olarak yeniden
-   hesaplanamaz.
-2. **RL metriklerini üreten kaynak script burada değil.** Donmuş UKF kolonu semptomu ve kök-neden
-   *sınıfı* dosyalardan ispatlandı; hatalı kod satırı, üretici script eklenmeden gösterilemez.
+1. **Ham per-test rosbag/büyük telemetry bu bundle'da yok** (boyut). Navigation/Guidance/Controller/
+   FSM/BT/Sensor metrikleri `final_validation` analiz çıktılarından taşınmıştır; özet PNG/CSV jüri için
+   yeterlidir, ham `.db3`/büyük `telemetry.csv` repoya alınmaz.
+2. **RL kök neden tamamen çözüldü.** Donmuş-UKF-kolon hatası exporter kodunda bulundu, düzeltildi
+   ([rl_policy_validation_fixed.py](docs/diagnostics/rl_ukf/rl_policy_validation_fixed.py)) ve sonuç ham
+   telemetriden bağımsız doğrulandı. Düzeltilmiş exporter ROS 2 + `.db3` gerektirdiği için bu ortamda
+   yeniden çalıştırılmadı; ROS-bağımsız recompute ile doğrulandı.
 3. **RL ≠ eğitilmiş SAC.** Checkpoint/öğrenme eğrisi/değerlendirme protokolü yok → policy candidate.
 4. **Ateşleme karar mantığı izole test edilmedi** (mimaride tanımlı, ayrı kanıt yok).
 5. **ArduPilot kontrol arka ucu** performans doğrulamasına dahil değil (kalibre edilmedi).
@@ -470,7 +496,8 @@ zemheri_validation/
 │   └── README_RL.md
 ├── docs/
 │   ├── architecture/               ← SARA mimari (png/pdf/drawio + 2 CSV)
-│   ├── diagnostics/rl_ukf/         ← RL UKF/GT teşhis paketi (MD + 2 CSV + 2 PNG)
+│   ├── diagnostics/rl_ukf/         ← RL UKF teşhisi (MD + CSV'ler + PNG + fixed exporter)
+│   │   └── legacy/                 ← hatalı exporter + eski (kullanılmayan) UKF RMSE değerleri
 │   ├── figures/rl/                 ← üretilen RL figürleri (4 PNG)
 │   └── wiki/                       ← 9 wiki sayfası (katman başına)
 ├── data/episodes/
@@ -481,6 +508,7 @@ zemheri_validation/
 ├── sim/
 │   └── sara_sedaa.py               ← RL/sim ortamı (Gymnasium-tarzı)
 └── scripts/
-    ├── verify_validation_artifacts.py   ← teslim öncesi tutarlılık denetimi
-    └── generate_rl_figures.py           ← RL figür üreticisi (düzeltilmiş)
+    ├── verify_validation_artifacts.py      ← teslim öncesi tutarlılık denetimi
+    ├── generate_rl_figures.py              ← RL figür üreticisi
+    └── recompute_rl_ukf_from_telemetry.py  ← ROS-bağımsız UKF RMSE yeniden hesabı
 ```

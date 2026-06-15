@@ -119,8 +119,20 @@ def check_diagnosis():
     check(summary.exists(), "corrected RL summary CSV mevcut", "corrected RL summary CSV YOK")
     check(span.exists(), "UKF span-check CSV mevcut", "UKF span-check CSV YOK")
     for png in ["rl_ukf_raw_vs_aligned_rmse.png", "hard_cross_gt_ukf_alignment.png",
-                "RL_UKF_GT_DIAGNOSIS.md"]:
+                "RL_UKF_GT_DIAGNOSIS.md",
+                "recomputed_rl_ukf_from_telemetry_verification.csv",
+                "rl_policy_validation_fixed.py",
+                "legacy/rl_policy_validation_BUGGY.py",
+                "legacy/legacy_rl_metrics_buggy_ukf_rmse.csv",
+                "legacy/README.md"]:
         check((diag / png).exists(), f"diagnostics/{png} mevcut", f"diagnostics/{png} YOK")
+    # düzeltme gerçekten uygulanmış mı?
+    fixed = (diag / "rl_policy_validation_fixed.py")
+    if fixed.exists():
+        txt = fixed.read_text(encoding="utf-8")
+        check('ukf["t"] -= start' in txt,
+              "Düzeltilmiş exporter UKF zaman normalizasyonunu içeriyor",
+              "Düzeltilmiş exporter'da beklenen fix satırı yok")
     if pd is None or not span.exists() or not summary.exists():
         return
     sp = pd.read_csv(span)
@@ -195,6 +207,38 @@ def check_architecture():
           f"Mimari CSV tutarsız — düğüm listesinde olmayan uçlar: {sorted(set(missing))}")
 
 
+def check_tracked_files_clean():
+    """Git'e gitmemesi gereken ham/büyük/arşiv dosyaları staged/tracked mı?"""
+    import subprocess
+    try:
+        out = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True,
+                             text=True, encoding="utf-8")
+    except Exception as exc:
+        results.append((WARN, f"git ls-files çalıştırılamadı: {exc}"))
+        return
+    if out.returncode != 0:
+        results.append((WARN, "git deposu değil ya da git yok — tracked kontrolü atlandı"))
+        return
+    tracked = [f for f in out.stdout.splitlines() if f.strip()]
+    forbidden_ext = (".zip", ".rar", ".7z", ".tar", ".gz", ".bundle", ".db3",
+                     ".bag", ".mcap", ".log", ".pyc", ".tmp", ".bak")
+    bad = [f for f in tracked if f.lower().endswith(forbidden_ext)]
+    bad += [f for f in tracked if "recording/" in f or f.startswith(("build/", "install/", "log/"))]
+    bad += [f for f in tracked if f.lower().endswith(".mp4") and not f.startswith("reports/")]
+    check(not bad, f"Yasaklı/ham dosya tracked DEĞİL ({len(tracked)} dosya izleniyor)",
+          f"Repoya girmemesi gereken tracked dosyalar: {sorted(set(bad))}")
+    # büyük dosya uyarısı (>5 MB)
+    big = []
+    for f in tracked:
+        p = ROOT / f
+        if p.exists() and p.stat().st_size > 5 * 1024 * 1024:
+            big.append(f"{f} ({p.stat().st_size // (1024*1024)} MB)")
+    if big:
+        results.append((WARN, f"5 MB'tan büyük tracked dosya(lar): {big}"))
+    else:
+        results.append((PASS, "5 MB'tan büyük tracked dosya yok"))
+
+
 def main():
     print("=" * 64)
     print("SARA Validation Suite — artefact doğrulama")
@@ -206,6 +250,7 @@ def main():
     check_html_report()
     check_notebook()
     check_architecture()
+    check_tracked_files_clean()
 
     n_fail = sum(1 for lvl, _ in results if lvl == FAIL)
     n_warn = sum(1 for lvl, _ in results if lvl == WARN)
