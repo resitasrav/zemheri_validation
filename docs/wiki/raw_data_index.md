@@ -53,6 +53,8 @@ olarak tutulur:
 | Source scripts | [src/validation/](../../src/validation/) | Real validation code | Yes | Takımın final_validation analiz/test kodları |
 | Helper scripts | [scripts/](../../scripts/) | Recompute, figure generation, verify | Yes | Yardımcı teslim/yeniden üretim araçları |
 | Episode data | [data/episodes/sara_best_episode.csv](../../data/episodes/sara_best_episode.csv) | Curated best-episode CSV | Yes | 34 kolon, 662 adım |
+| Runtime control contract | `/control/setpoint` | Real vehicle / Pixhawk handoff topic | No direct telemetry evidence | Validation koşumları `control_backend:=ros` kullanır |
+| DVL canonical topics | `/dvl/raw`, `/dvl/quality_twist` | Raw DVL and quality-gated UKF input | Yes, in recorder/analysis config | `/dvl/twist` legacy mission-runner recording entry; curated metrics use `/dvl/quality_twist` |
 
 ## Figures
 <img src="../figures/navigation/navigation_straight_trajectory_depth.png" width="760">
@@ -76,4 +78,6 @@ raw recording, arşiv, build/log/cache dosyaları `.gitignore` ile dışarıda b
 
 ## Limitations
 Ham `recording/telemetry.csv` ve `.db3` bag dosyaları boyut nedeniyle repoda değildir. Gerektiğinde
-`final_validation.zip` veya harici `final_validation/results` klasöründen yeniden üretim yapılır.
+`final_validation.zip` veya harici `final_validation/results` klasöründen yeniden üretim yapılır. Pixhawk/
+ArduPilot runtime performansı, `/control/setpoint` sonrası düşük seviye kontrol ve izole fire-decision
+kanıtı bu validasyon paketinde bulunmaz.

@@ -26,3 +26,14 @@ urdf,sensor_sim,-,test
 sensor_sim,rosbag_hil,-,test
 stage1,mission_manager_node,-,faz
 stage2,mission_manager_node,-,faz
+guidance_node,setpoint_controller,/guidance/setpoint,validation_ros_control
+setpoint_controller,velocity_controller,/sara_uuv/cmd_vel,validation_ros_control
+velocity_controller,gazebo,/sara_uuv/propeller/cmd_angvel + /sara_uuv/fin_*/cmd_pos,validation_ros_control
+guidance_node,control_setpoint_bridge_node,/guidance/setpoint,runtime_real_vehicle
+control_setpoint_bridge_node,mavlink_bridge_node,/control/setpoint,runtime_real_vehicle
+navigation_health_node,failsafe_manager_node,/navigation/status,guvenlik
+failsafe_manager_node,auv_state_publisher,/auv/failsafe/status,guvenlik
+safety_monitor_node,failsafe_manager_node,legacy alias / safety rules,guvenlik
+mission_manager_node,stage2_fire_bt_node,/auv/mission/status,fire_runtime
+stage2_fire_bt_node,fire_control_node,/auv/fire/permission_candidate,fire_runtime
+fire_control_node,mission_manager_node,/auv/fire/status,fire_runtime

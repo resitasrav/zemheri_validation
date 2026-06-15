@@ -22,9 +22,14 @@ entegrasyon kanıtını raporlamak. Fire karar mantığı için izole test kanı
 `control_backend:=ros` ile tam görev düğüm yığını çalıştırıldı. Dalma kriteri `pitch <= -30°`, ateşleme
 durumu ise `/auv/fire/status` alanlarından (`state`, `actuator_command`, `fired`) okundu.
 
+Runtime sözleşmede Aşama-2 fire logic, `mission_manager_node` içine gömülü tek blok gibi değil,
+`stage2_fire_bt_node → /auv/fire/permission_candidate → fire_control_node → /auv/fire/status` zinciri olarak
+ayrıdır. Bu validasyon paketi bu zincirin izole fire-decision testini değil, Stage 2 entegrasyon koşumunda
+gözlenen fire-state sonucunu raporlar.
+
 ## Inputs
-`mission_manager_node` (Stage 2 BT), `competition_mission_runner.py`, `safety_monitor_node`,
-`guidance_node`, kontrol zinciri, UKF ve GT odometri.
+`mission_manager_node`, runtime fire zinciri (`stage2_fire_bt_node`, `fire_control_node`), `competition_mission_runner.py`,
+`safety_monitor_node` / `failsafe_manager_node`, `guidance_node`, ROS sim kontrol zinciri, UKF ve GT odometri.
 
 ## Execution / Commands
 ```bash

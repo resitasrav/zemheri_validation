@@ -23,9 +23,13 @@ Tam görev düğüm yığını `control_backend:=ros` ile çalıştırıldı. Fa
 bitiş çizgisi kriteri ise [analyze_report_bag.py](../../src/validation/analyze_report_bag.py) stage1 mantığıyla
 hesaplandı: boyuna hata `|along-10| <= 2 m`, yanal hata `|cross| <= 3 m`.
 
+Bu validation koşumu runtime gerçek araç kontrol zincirini değil, ROS sim kontrol zincirini doğrular.
+Runtime kapsamda mission çıktısı guidance üzerinden `control_setpoint_bridge_node → /control/setpoint`
+zincirine gider; bu paket Stage 1 için Pixhawk/ArduPilot performans kanıtı sunmaz.
+
 ## Inputs
-`mission_manager_node` (Stage 1 FSM), `guidance_node`, `control_setpoint_node`, `velocity_controller`,
-`navigation_health_node`, UKF ve GT odometri.
+`mission_manager_node` (Stage 1 FSM), `guidance_node`, `control_setpoint_node` / `setpoint_controller`,
+`velocity_controller`, `navigation_health_node`, UKF ve GT odometri.
 
 ## Execution / Commands
 ```bash
@@ -86,4 +90,6 @@ Stage 1 tam PASS olarak raporlanmamalıdır.
 
 ## Limitations
 Bitiş çizgisi yanal kriteri bu koşumda sağlanmadı; iyileştirme konusu dönüş geometrisi/guidance ayarıdır.
-Ham rosbag ve büyük telemetry kayıtları repoya dahil edilmez.
+Ham rosbag ve büyük telemetry kayıtları repoya dahil edilmez. `safety_monitor_node` adı eski/yüksek seviye
+güvenlik etiketi olarak belgelerde görülebilir; runtime sözleşmede bu rol `failsafe_manager_node` ve
+`/auv/failsafe/status` çıkışıyla temsil edilir.
