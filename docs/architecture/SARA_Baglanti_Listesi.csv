@@ -1,0 +1,28 @@
+kaynak,hedef,veri,tip
+dvl_quality_gate_node,ukf_node,/dvl/quality_twist,ana
+ukf_node,navigation_health_node,/odometry/ukf,ana
+navigation_health_node,auv_state_publisher,/navigation/status,ana
+auv_state_publisher,mission_manager_node,/auv/state,ana
+auv_state_publisher,guidance_node,/auv/state,ana
+mission_manager_node,guidance_node,/guidance/goal,ana
+guidance_node,control_setpoint_node,/guidance/setpoint,ana
+control_setpoint_node,mavlink_bridge_node,/sara_uuv/cmd_vel,ana
+mission_manager_node,safety_monitor_node,/auv/mission/status,guvenlik
+safety_monitor_node,rl_tuner,AI disable,guvenlik
+rl_tuner,control_setpoint_node,PID params,guvenlik
+safety_monitor_node,mavlink_bridge_node,failsafe / surface,guvenlik
+ukf_node,rl_tuner,sensor data,guvenlik
+pixhawk_hold,reconnect_sync,-,guvenlik
+reconnect_sync,safety_monitor_node,durum eşitleme,guvenlik
+mavlink_bridge_node,ardupilot,MAVLink,donanim
+ardupilot,mavlink_bridge_node,telemetry,donanim
+pixhawk_sensors,ardupilot,IMU / basınç,donanim
+ardupilot,pwm_servo,-,donanim
+ardupilot,hw_failsafe,kopma anında,donanim
+pwm_servo,fiziksel,-,donanim
+mavlink_bridge_node,gazebo,SITL / HIL,test
+gazebo,urdf,-,test
+urdf,sensor_sim,-,test
+sensor_sim,rosbag_hil,-,test
+stage1,mission_manager_node,-,faz
+stage2,mission_manager_node,-,faz

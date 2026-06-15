@@ -1,0 +1,44 @@
+## SARA Sistem Mimarisi - draw.io CSV import
+## Kullanim: draw.io > Extras (Ekstralar) > Insert (Ekle) > Advanced (Gelismis) > CSV
+## Asagidaki tum metni (## yorumlar dahil) kopyalayip yapistirin.
+#
+## ---- Stil tanimi: katman (layer) sutununa gore renk ----
+# label: %ad%
+# style: rounded=1;whiteSpace=wrap;html=1;fillColor=%dolgu%;fontColor=%yazi%;strokeColor=%kenar%;fontSize=11;fontStyle=1;
+# namespace: sara-
+# connect: {"from":"kaynak", "to":"id", "label":"veri", "style":"edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=10;"}
+# width: 200
+# height: 60
+# padding: 15
+# ignore: dolgu,yazi,kenar,kaynak,veri
+# nodespacing: 50
+# levelspacing: 60
+# edgespacing: 40
+# layout: none
+#
+## ---- Sutunlar ----
+## id, ad, katman, dolgu, yazi, kenar, kaynak, veri
+id,ad,katman,dolgu,yazi,kenar,kaynak,veri
+stage1,"AŞAMA-1: Seyir / Rota Takibi (LOS) · Başlangıç Noktasına Dönüş",Faz,#DEEBF7,#1F4E79,#9DC3E6,,
+stage2,"AŞAMA-2: Yaklaşım → Pitch-Up → Güvenli Ateşleme → Roket Ayrılması",Faz,#DEEBF7,#1F4E79,#9DC3E6,,
+dvl_quality_gate_node,"dvl_quality_gate_node — DVL kalite kontrolü",Navigasyon,#E2EFDA,#385723,#A9D08E,,
+ukf_node,"ukf_node — robot_localization (UKF)",Navigasyon,#548235,#FFFFFF,#385723,dvl_quality_gate_node,/dvl/quality_twist
+navigation_health_node,"navigation_health_node — valid / degraded",Navigasyon,#548235,#FFFFFF,#385723,ukf_node,/odometry/ukf
+auv_state_publisher,"auv_state_publisher — AuvState yayını",Navigasyon,#548235,#FFFFFF,#385723,navigation_health_node,/navigation/status
+mission_manager_node,"mission_manager_node — FSM + Aşama-2 BT",Gorev,#1F4E79,#FFFFFF,#14385A,auv_state_publisher,/auv/state
+guidance_node,"guidance_node — LOS / Waypoint",Gorev,#1F4E79,#FFFFFF,#14385A,mission_manager_node,/guidance/goal
+control_setpoint_node,"control_setpoint_node — PID setpoint",Gorev,#1F4E79,#FFFFFF,#14385A,guidance_node,/guidance/setpoint
+mavlink_bridge_node,"mavlink_bridge_node — MAVLink TX / RX",Donanim,#595959,#FFFFFF,#3A3A3A,control_setpoint_node,/sara_uuv/cmd_vel
+safety_monitor_node,"safety_monitor_node — heartbeat · failsafe · AI disable · fire inhibit",Guvenlik,#C00000,#FFFFFF,#7F0000,mission_manager_node,/auv/mission/status
+rl_tuner,"RL Tuner (SAC) — PID kazanç ayarlayıcı [ateşlemede devre dışı]",Guvenlik,#FCE4D6,#833C00,#F4B183,ukf_node,sensor data
+pixhawk_hold,"Pixhawk Bağımsız Hold — son yaw/derinlik tutma → kontrollü yüzeye çıkış",Guvenlik,#FCE4D6,#833C00,#F4B183,,
+reconnect_sync,"Reconnect + State Sync — bağlantı sonrası görev kurtarma",Guvenlik,#FCE4D6,#833C00,#F4B183,pixhawk_hold,
+ardupilot,"ArduPilot Otopilot — Attitude / Depth Hold · PID iç döngü",Donanim,#595959,#FFFFFF,#3A3A3A,mavlink_bridge_node,MAVLink
+pixhawk_sensors,"Pixhawk Sensörleri — IMU · Basınç (EKF)",Donanim,#D9D9D9,#3A3A3A,#AEAAAA,,
+pwm_servo,"PWM / Servo Çıkışı — 1 itki motoru + 4 kuyruk servosu",Donanim,#D9D9D9,#3A3A3A,#AEAAAA,ardupilot,
+hw_failsafe,"Donanım Fail-Safe — motor limit · güvenli duruş",Donanim,#D9D9D9,#3A3A3A,#AEAAAA,,
+fiziksel,"FİZİKSEL EYLEYİCİLER — İtki Motoru (A50) + 4× Kontrol Yüzeyi Servosu",Donanim,#262626,#FFFFFF,#000000,pwm_servo,
+gazebo,"Gazebo Harmonic — Simülasyon",Test,#7030A0,#FFFFFF,#4A1F6B,,
+urdf,"URDF / Xacro Model",Test,#E5D9F2,#4A1F6B,#B49BD8,gazebo,
+sensor_sim,"Sensör Sim. (DVL / IMU / Basınç)",Test,#E5D9F2,#4A1F6B,#B49BD8,urdf,
+rosbag_hil,"ros2 bag · HIL · Havuz Testi",Test,#E5D9F2,#4A1F6B,#B49BD8,sensor_sim,
