@@ -16,6 +16,9 @@ sensorler -> UKF/navigasyon -> guidance -> controller -> gorev FSM/BT -> sim akt
 
 Veri akisinin ROS 2 topic/düğüm seviyesindeki kisa ozeti icin: [`ros2_navigation_dataflow.md`](mimari/ros2_navigation_dataflow.md)
 
+**Not (kapsam):** RL Tuner (SAC tabanlı PID kazanç ayarlayıcı) mimaride **ateşleme fazında devre dışı**
+olarak tanımlıdır. Bu depodaki RL doğrulaması bir *aday politika* değerlendirmesidir
+
 **Kapsam uyarisi:** Bu dogrulama paketindeki performans sonuclari ROS tabanli simülasyon kontrol zincirine aittir. Gercek arac tarafindaki Pixhawk/ArduPilot entegrasyonu ve dusuk seviye kontrol performansi bu sonuc setinde dogrudan dogrulanmamistir.
 
 **Kod uyarisi:** [`kodlar/`](kodlar/README.md) altindaki Python dosyalari, test kosum mantigini ve metrik uretim yaklasimini gostermek icin eklenmistir. Bu dosyalar tek basina calisan bagimsiz bir paket degildir; ana ZEMHERI ROS 2 workspace, mesaj arayuzleri, launch/config dosyalari ve simülasyon altyapisi olmadan ayni ciktilari uretmez.
@@ -36,6 +39,55 @@ Bu paket, SARA otonom yazilim zincirinin simülasyon ortamindaki algoritma dogru
 
 ```text
 sensorler -> UKF/navigasyon -> gudum -> kontrolcu -> gorev FSM/BT -> sim aktüator komutlari
+```
+---
+```mermaid
+---
+config:
+  layout: dagre
+---
+flowchart TB
+    GZ["Gazebo Harmonic — buoyant_sara.world<br/><small>GT odometri · IMU · DVL · basınç · akıntı</small>"]
+    GZ --> BR["ros_gz köprüleri"]
+    BR --> GATE["dvl_quality_gate_node"]
+    GATE -->|"/dvl/quality_twist"| UKF["ukf_node<br/><small>robot_localization (UKF)</small>"]
+    BR --> UKF
+    UKF -->|"/odometry/ukf"| HEALTH["navigation_health_node<br/><small>valid / degraded</small>"]
+    HEALTH -->|"/navigation/status"| STATE["auv_state_publisher<br/>/auv/state"]
+    UKF --> STATE
+    OC["ocean_current_node"] --> MIS["mission_manager_node<br/><small>Aşama-1 FSM + Aşama-2 BT</small>"]
+    STATE --> MIS
+    MIS -->|"/guidance/goal"| GUID["guidance_node<br/><small>LOS / Waypoint</small>"]
+    STATE --> GUID
+
+    subgraph SIM["Validasyon kontrol zinciri — control_backend:=ros (testlerde koşan yol)"]
+        direction TB
+        SETP["setpoint_controller<br/><small>derinlik/yaw hatası → hız komutu</small>"]
+        SETP -->|"/sara_uuv/cmd_vel"| VEL["velocity_controller"]
+        VEL -->|"/sara_uuv/propeller/cmd_angvel"| PROP["1 itki motoru"]
+        VEL -->|"/sara_uuv/fin_1..4/cmd_pos"| FINS["4 kuyruk (X-fin) servosu"]
+    end
+
+    subgraph RUNTIME["Gerçek araç teslim sınırı — KAPSAM DIŞI (bu pakette kanıt yok)"]
+        direction TB
+        RB["control_setpoint_bridge_node"]
+        RB -->|"/control/setpoint (ControlSetpoint)"| PIX["Pixhawk / ArduPilot<br/><small>düşük seviye PID + mixer</small>"]
+        PIX --> PWM["PWM/Servo → itki + kuyruk aktüatörleri"]
+    end
+
+    GUID -->|"/guidance/setpoint"| SETP
+    GUID -. "gerçek araç profili (kapsam dışı)" .-> RB
+
+    classDef pipe fill:#EEF2F7,stroke:#37474F,stroke-width:1.5px,color:#0D1B2A;
+    classDef sim fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px,color:#0D1B2A;
+    classDef real fill:#FFEBEE,stroke:#C62828,stroke-width:2px,color:#0D1B2A;
+
+    class GZ,BR,GATE,UKF,HEALTH,STATE,OC,MIS,GUID pipe;
+    class SETP,VEL,PROP,FINS sim;
+    class RB,PIX,PWM real;
+
+    style SIM fill:#F1F8E9,stroke:#2E7D32,stroke-width:2px;
+    style RUNTIME fill:#FCE4EC,stroke:#C62828,stroke-width:2px,stroke-dasharray: 6 4;
 ```
 
 Bu validasyon paketinde performans kaniti verilen kontrol yolu ROS tabanli simülasyon kontrol zinciridir. Pixhawk/ArduPilot entegrasyonu ve gercek arac dusuk seviye kontrol performansi bu paket kapsaminda degerlendirilmemistir. Bu ayrim ozellikle okunmalidir; burada yer alan metrikler simülasyon testleri icindir.
