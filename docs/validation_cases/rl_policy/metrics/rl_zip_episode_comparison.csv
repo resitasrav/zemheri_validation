@@ -1,7 +1,0 @@
-Episode,Sonuç,İlerleme oranı,Cross-track RMSE (m),Derinlik RMSE (m),Maksimum hız (m/s),Navigasyon geçerli oranı,UKF karşılaştırma durumu,Performans puanı,Çıktı klasörü
-Akıntısız,BAŞARISIZ - ROS/Gazebo politika adayı koşulları sağlanmadı,1.0021682039441018,0.5638645678048679,0.8277486461084652,1.028863942395229,1.0,GEÇERSİZ - UKF konum hareketi gözlemlenmedi,74.98705856075767,rl_policy_20260615_140215
-Takip eden,BAŞARISIZ - ROS/Gazebo politika adayı koşulları sağlanmadı,1.0608903347616763,0.3424872442278021,0.8119727932496806,1.2810686718125048,1.0,GEÇERSİZ - UKF konum hareketi gözlemlenmedi,78.62323547158935,rl_policy_20260615_140405
-Çapraz,BAŞARISIZ - ROS/Gazebo politika adayı koşulları sağlanmadı,1.081883728812137,1.020443491070319,1.013317365110323,0.9832388765215968,1.0,GEÇERSİZ - UKF konum hareketi gözlemlenmedi,64.42700033173875,rl_policy_20260615_140556
-Diyagonal,BAŞARISIZ - ROS/Gazebo politika adayı koşulları sağlanmadı,1.6129532453105264,0.7933250910841557,0.5199716951188144,1.2521222704222563,1.0,GEÇERSİZ - UKF konum hareketi gözlemlenmedi,77.70068973136136,rl_policy_20260615_140746
-Ters,BAŞARISIZ - ROS/Gazebo politika adayı koşulları sağlanmadı,1.0106518913901246,0.3452268045694605,1.3719976605891588,0.8308501873117261,1.0,GEÇERSİZ - UKF konum hareketi gözlemlenmedi,67.38164471967491,rl_policy_20260615_140938
-Güçlü çapraz,BAŞARISIZ - ROS/Gazebo politika adayı koşulları sağlanmadı,1.1846039605894012,3.1438444581854825,1.6212919625910265,0.9467316776880278,1.0,GEÇERSİZ - UKF konum hareketi gözlemlenmedi,40.0,rl_policy_20260615_141143

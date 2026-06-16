@@ -1,0 +1,18 @@
+| Metrik | Değer | Birim | Açıklama | Okuma Notu |
+|---|---|---|---|---|
+| Örnek sayısı | 3226 | adet | Analizde kullanılan hizalı UKF örneği | Kayıt kapsamını gösterir |
+| Test süresi | 107.5000 | s | Analiz edilen kayıt süresi | Kayıt kapsamını gösterir |
+| 3B konum RMSE | 1.3407 | m | UKF ile ground truth arasındaki ortalama 3B konum hata büyüklüğü | Düşük değer daha iyi; simülasyon ground truth referanslıdır |
+| Maksimum 3B konum hatası | 1.6441 | m | Test boyunca gözlenen en yüksek 3B konum hatası | Düşük değer daha iyi; simülasyon ground truth referanslıdır |
+| Derinlik RMSE | 0.0749 | m | UKF ve ground truth Z değerleri arasındaki hata | Düşük değer daha iyi; simülasyon ground truth referanslıdır |
+| Toplam hız RMSE | 0.1695 | m/s | UKF ve ground truth toplam hız büyüklükleri arasındaki hata | Düşük değer daha iyi; simülasyon ground truth referanslıdır |
+| Roll RMSE | 0.4688 | ° | Roll kestirim hatası | Düşük değer daha iyi; simülasyon ground truth referanslıdır |
+| Pitch RMSE | 0.8715 | ° | Pitch kestirim hatası | Düşük değer daha iyi; simülasyon ground truth referanslıdır |
+| Yaw RMSE | 3.3788 | ° | Heading/yaw kestirim hatası | Düşük değer daha iyi; simülasyon ground truth referanslıdır |
+| Maksimum yaw hatası | 6.5078 | ° | Test boyunca gözlenen en yüksek mutlak yaw hatası | Düşük değer daha iyi; simülasyon ground truth referanslıdır |
+| Gerçek maksimum mutlak roll | 10.3822 | ° | Ground truth üzerinde gözlenen araç roll açısı; kestirim hatası değildir | Düşük değer daha iyi; simülasyon ground truth referanslıdır |
+| Gerçek maksimum mutlak pitch | 9.7315 | ° | Ground truth üzerinde gözlenen araç pitch açısı; kestirim hatası değildir | Düşük değer daha iyi; simülasyon ground truth referanslıdır |
+| Maksimum rota doğrultusu mesafesi | 73.8435 | m | Başlangıç heading doğrultusunda ulaşılan en ileri konum | Düşük değer daha iyi; simülasyon ground truth referanslıdır |
+| Maksimum mutlak yanal sapma | 32.6010 | m | Başlangıç doğrultusuna göre gözlenen en yüksek yanal sapma | Düşük değer daha iyi; simülasyon ground truth referanslıdır |
+| Bitiş çizgisi boyuna hatası | 3.1975 | m | Son konum ile başlangıçtan 10 m ilerideki bitiş çizgisi arasındaki boyuna hata | Düşük değer daha iyi; simülasyon ground truth referanslıdır |
+| Bitiş çizgisi yanal hatası | 32.4550 | m | Son konumun görev doğrultusuna göre yanal hatası | Düşük değer daha iyi; simülasyon ground truth referanslıdır |

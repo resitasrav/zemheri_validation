@@ -1,2 +1,0 @@
-test,samples,duration_sec,position_rmse_m,position_max_error_m,depth_rmse_m,speed_rmse_mps,yaw_rmse_deg,yaw_max_error_deg,max_along_track_m,max_abs_cross_track_m
-navigation_straight,1379,45.935,0.21703323766546906,1.0817685268047956,0.0011806694180371722,0.17742240841798185,0.010941037909041018,0.024741103157342386,32.521618437814574,0.15779391648932042

@@ -1,0 +1,9 @@
+service,success,message
+set_mode_constant,True,Mode updated
+set_target,True,Target current updated
+trigger_gust,True,Gust triggered
+schedule_event,True,Scheduled event added
+clear_schedule,True,Schedule cleared
+set_preset,True,Preset applied
+load_built_in_scenario,True,Built-in scenario loaded
+reset_episode,True,Episode reset completed

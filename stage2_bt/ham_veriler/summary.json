@@ -1,0 +1,24 @@
+{
+  "session": "recording",
+  "recording_duration_sec": 46.32878232002258,
+  "message_count": 86874,
+  "topic_count": 30,
+  "resource_sample_count": 1131,
+  "rosout_count": 78,
+  "rosout_levels": {
+    "20": 76,
+    "30": 1,
+    "40": 1
+  },
+  "bag_size_mb": 13.376413345336914,
+  "average_bag_mb_s": 0.2887279284168847,
+  "estimated_one_hour_bag_mb": 1039.420542300785,
+  "generated_figures": [
+    "known_signal_timeseries.png",
+    "process_cpu_max.png",
+    "process_memory_max.png",
+    "rosout_levels.png",
+    "topic_counts.png",
+    "topic_rates.png"
+  ]
+}

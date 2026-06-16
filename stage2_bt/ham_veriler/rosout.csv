@@ -1,0 +1,79 @@
+wall_time,ros_time,level,name,message,file,line
+1781523532.9999423,13.525,20,system_recorder,CSV subscription added: /rosout [rcl_interfaces/msg/Log],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.020785,13.542,20,system_recorder,CSV subscription added: /ground_truth/odometry [nav_msgs/msg/Odometry],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.024144,13.544,20,system_recorder,CSV subscription added: /odometry/ukf [nav_msgs/msg/Odometry],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0292656,13.547,20,system_recorder,CSV subscription added: /navigation/status [zemheri_interfaces/msg/NavigationStatus],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0308576,13.549,20,system_recorder,CSV subscription added: /dvl/raw [marine_acoustic_msgs/msg/Dvl],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0323455,13.55,20,system_recorder,CSV subscription added: /dvl/quality_twist [geometry_msgs/msg/TwistWithCovarianceStamped],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.034538,13.551,20,system_recorder,CSV subscription added: /imu/data [sensor_msgs/msg/Imu],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.03628,13.553,20,system_recorder,CSV subscription added: /imu/data_raw [sensor_msgs/msg/Imu],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0376005,13.554,20,system_recorder,CSV subscription added: /pressure/raw [sensor_msgs/msg/FluidPressure],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0389614,13.556,20,system_recorder,CSV subscription added: /pressure/depth_pose [geometry_msgs/msg/PoseWithCovarianceStamped],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0400083,13.557,20,system_recorder,CSV subscription added: /auv/state [zemheri_interfaces/msg/AuvState],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.041031,13.558,20,system_recorder,CSV subscription added: /auv/mission/status [zemheri_interfaces/msg/MissionStatus],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0417619,13.559,20,system_recorder,CSV subscription added: /auv/failsafe/status [zemheri_interfaces/msg/SafetyStatus],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.042468,13.559,20,system_recorder,CSV subscription added: /auv/fire/permission_candidate [zemheri_interfaces/msg/FirePermission],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.043102,13.56,20,system_recorder,CSV subscription added: /auv/fire/status [zemheri_interfaces/msg/FireStatus],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0442345,13.56,20,system_recorder,CSV subscription added: /auv/fire/actuator_command [std_msgs/msg/Bool],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0461206,13.562,20,system_recorder,CSV subscription added: /auv/fire/separation_confirmed [std_msgs/msg/Bool],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.047079,13.563,20,system_recorder,CSV subscription added: /auv/fire/capacitive_surface_valid [std_msgs/msg/Bool],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0477197,13.563,20,system_recorder,CSV subscription added: /auv/fire/capacitive_sensor_z [std_msgs/msg/Float64],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0482097,13.563,20,system_recorder,CSV subscription added: /guidance/goal [zemheri_interfaces/msg/GuidanceGoal],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.048684,13.564,20,system_recorder,CSV subscription added: /guidance/setpoint [zemheri_interfaces/msg/GuidanceSetpoint],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.049127,13.564,20,system_recorder,CSV subscription added: /sara_uuv/cmd_vel [geometry_msgs/msg/Twist],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0496151,13.565,20,system_recorder,CSV subscription added: /sara_uuv/propeller/cmd_angvel [std_msgs/msg/Float64],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0502286,13.566,20,system_recorder,CSV subscription added: /sara_uuv/fin_1/cmd_pos [std_msgs/msg/Float64],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0510223,13.566,20,system_recorder,CSV subscription added: /sara_uuv/fin_2/cmd_pos [std_msgs/msg/Float64],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0515792,13.567,20,system_recorder,CSV subscription added: /sara_uuv/fin_3/cmd_pos [std_msgs/msg/Float64],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0523052,13.568,20,rosbag2_recorder,Subscribed to topic '/auv/fire/status',./src/rosbag2_transport/recorder.cpp,368
+1781523533.0536273,13.569,20,system_recorder,CSV subscription added: /sara_uuv/fin_4/cmd_pos [std_msgs/msg/Float64],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0543916,13.57,20,rosbag2_recorder,Subscribed to topic '/auv/fire/actuator_command',./src/rosbag2_transport/recorder.cpp,368
+1781523533.0548182,13.57,20,system_recorder,CSV subscription added: /ocean_current [geometry_msgs/msg/Vector3],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0557384,13.57,20,system_recorder,CSV subscription added: /ocean_current/status [std_msgs/msg/String],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0564265,13.571,20,system_recorder,CSV subscription added: /battery/state [sensor_msgs/msg/BatteryState],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0570567,13.571,20,system_recorder,CSV subscription added: /clock [rosgraph_msgs/msg/Clock],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0575988,13.572,20,system_recorder,CSV subscription added: /tf [tf2_msgs/msg/TFMessage],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.0580046,13.572,20,system_recorder,CSV subscription added: /tf_static [tf2_msgs/msg/TFMessage],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781523533.058433,13.572,20,system_recorder,System recording started: /home/melikebeyazli/zemheri_ws/src/zemheri_ros2/analysis/final_validation/results/stage2_bt_20260615_143848/recording,/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,74
+1781523533.0893056,13.596,20,rosbag2_recorder,Subscribed to topic '/auv/fire/permission_candidate',./src/rosbag2_transport/recorder.cpp,368
+1781523533.1938365,13.679,20,rosbag2_recorder,Subscribed to topic '/dvl/raw',./src/rosbag2_transport/recorder.cpp,368
+1781523533.196564,13.68,20,rosbag2_recorder,Subscribed to topic '/guidance/goal',./src/rosbag2_transport/recorder.cpp,368
+1781523533.1998546,13.682,20,rosbag2_recorder,Subscribed to topic '/tf',./src/rosbag2_transport/recorder.cpp,368
+1781523533.2018273,13.684,20,rosbag2_recorder,Subscribed to topic '/auv/mission/status',./src/rosbag2_transport/recorder.cpp,368
+1781523533.2027574,13.684,20,rosbag2_recorder,Subscribed to topic '/imu/data',./src/rosbag2_transport/recorder.cpp,368
+1781523533.2036126,13.685,20,rosbag2_recorder,Subscribed to topic '/ocean_current',./src/rosbag2_transport/recorder.cpp,368
+1781523533.2043664,13.685,20,rosbag2_recorder,Subscribed to topic '/ocean_current/status',./src/rosbag2_transport/recorder.cpp,368
+1781523533.205683,13.686,20,rosbag2_recorder,Subscribed to topic '/odometry/ukf',./src/rosbag2_transport/recorder.cpp,368
+1781523533.2065327,13.687,20,rosbag2_recorder,Subscribed to topic '/tf_static',./src/rosbag2_transport/recorder.cpp,368
+1781523533.3104284,13.772,20,rosbag2_recorder,Subscribed to topic '/guidance/setpoint',./src/rosbag2_transport/recorder.cpp,368
+1781523533.5208268,13.944,20,rosbag2_recorder,Subscribed to topic '/sara_uuv/fin_2/cmd_pos',./src/rosbag2_transport/recorder.cpp,368
+1781523533.5218248,13.945,20,rosbag2_recorder,Subscribed to topic '/sara_uuv/fin_1/cmd_pos',./src/rosbag2_transport/recorder.cpp,368
+1781523533.5236945,13.946,20,rosbag2_recorder,Subscribed to topic '/sara_uuv/fin_4/cmd_pos',./src/rosbag2_transport/recorder.cpp,368
+1781523533.5246496,13.947,20,rosbag2_recorder,Subscribed to topic '/sara_uuv/fin_3/cmd_pos',./src/rosbag2_transport/recorder.cpp,368
+1781523533.5256593,13.948,20,rosbag2_recorder,Subscribed to topic '/sara_uuv/propeller/cmd_angvel',./src/rosbag2_transport/recorder.cpp,368
+1781523533.658636,14.018,20,rosbag2_recorder,Subscribed to topic '/auv/state',./src/rosbag2_transport/recorder.cpp,368
+1781523541.4273992,20.753,20,report_test_runner,Case=stage2_bt | output=/home/melikebeyazli/zemheri_ws/src/zemheri_ros2/analysis/final_validation/results/stage2_bt_20260615_143848,/home/melikebeyazli/zemheri_ws/install/zemheri_simulation/lib/zemheri_simulation/report_test_runner.py,1033
+1781523541.429201,20.755,20,report_test_runner,Failsafe reset requested before mission start.,/home/melikebeyazli/zemheri_ws/install/zemheri_simulation/lib/zemheri_simulation/report_test_runner.py,420
+1781523541.430098,20.755,20,mission_manager_node,[RESET] Mission state reset to IDLE,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/mission_manager_node.py,198
+1781523541.4396884,20.764,20,failsafe_manager_node,Operator-command failsafe latches reset,/home/melikebeyazli/zemheri_ws/install/zemheri_failsafe/lib/python3.10/site-packages/zemheri_failsafe/failsafe_manager_node.py,117
+1781523541.4768105,20.797,20,report_test_runner,Mission and guidance ready; stage started.,/home/melikebeyazli/zemheri_ws/install/zemheri_simulation/lib/zemheri_simulation/report_test_runner.py,442
+1781523541.477743,20.798,20,mission_manager_node,[START] Mission start requested: STAGE_2,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/mission_manager_node.py,188
+1781523541.4821153,20.802,20,mission_manager_node,[MISSION] Stage=STAGE_2 | State=IDLE,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/core/transitions.py,7
+1781523541.4851208,20.805,20,mission_manager_node,[TRANSITION] IDLE -> SAVE_START_POINT,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/core/transitions.py,21
+1781523541.536355,20.853,20,mission_manager_node,[MISSION] Stage=STAGE_2 | State=SAVE_START_POINT,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/core/transitions.py,7
+1781523541.5378852,20.854,20,mission_manager_node,"[EVENT] Start saved | x=0.10, y=-0.00, z=-0.10, yaw=0.0 deg",/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/core/mission_context.py,33
+1781523541.5392985,20.855,20,mission_manager_node,[TRANSITION] SAVE_START_POINT -> DIVE_TO_OPERATION_DEPTH,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/core/transitions.py,21
+1781523541.5968537,20.905,20,mission_manager_node,[MISSION] Stage=STAGE_2 | State=DIVE_TO_OPERATION_DEPTH,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/core/transitions.py,7
+1781523551.2373703,29.152,20,mission_manager_node,[TRANSITION] DIVE_TO_OPERATION_DEPTH -> GO_TO_FIRE_ZONE_30M,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/core/transitions.py,21
+1781523551.2918668,29.202,20,mission_manager_node,[MISSION] Stage=STAGE_2 | State=GO_TO_FIRE_ZONE_30M,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/core/transitions.py,7
+1781523559.906972,36.602,20,mission_manager_node,[TRANSITION] GO_TO_FIRE_ZONE_30M -> ALIGN_FOR_LAUNCH,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/core/transitions.py,21
+1781523559.963758,36.652,20,mission_manager_node,[MISSION] Stage=STAGE_2 | State=ALIGN_FOR_LAUNCH,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/core/transitions.py,7
+1781523559.9653854,36.654,20,mission_manager_node,[TRANSITION] ALIGN_FOR_LAUNCH -> PITCH_UP_MANEUVER,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/core/transitions.py,21
+1781523560.0203605,36.703,20,mission_manager_node,[MISSION] Stage=STAGE_2 | State=PITCH_UP_MANEUVER,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/core/transitions.py,7
+1781523564.3878748,40.463,30,dvl_quality_gate_node,DVL measurement rejected: beam data invalid,/home/melikebeyazli/zemheri_ws/src/zemheri_ros2/zemheri_navigation/src/dvl_quality_gate_node.cpp,55
+1781523565.667184,41.553,20,mission_manager_node,[TRANSITION] PITCH_UP_MANEUVER -> FIRE_CONDITION_CHECK,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/core/transitions.py,21
+1781523565.7261586,41.602,20,mission_manager_node,[MISSION] Stage=STAGE_2 | State=FIRE_CONDITION_CHECK,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/core/transitions.py,7
+1781523578.2857127,51.551,20,mission_manager_node,[TRANSITION] FIRE_CONDITION_CHECK -> MISSION_FAILED,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/core/transitions.py,21
+1781523578.2874777,51.553,20,report_test_runner,Mission terminal state: MISSION_FAILED,/home/melikebeyazli/zemheri_ws/install/zemheri_simulation/lib/zemheri_simulation/report_test_runner.py,238
+1781523578.3423812,51.6,20,mission_manager_node,[MISSION] Stage=STAGE_2 | State=MISSION_FAILED,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/core/transitions.py,7
+1781523578.3482068,51.603,40,mission_manager_node,[FAILED] Stage-2 mission failed,/home/melikebeyazli/zemheri_ws/install/zemheri_mission/lib/python3.10/site-packages/zemheri_mission/stages/stage2.py,78

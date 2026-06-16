@@ -1,7 +1,0 @@
-episode,legacy_ukf_position_rmse_m,legacy_decision,note
-no_current,30.34,BASARISIZ,"buggy frozen-UKF-column artifact (do not use)"
-following_current,36.98,BASARISIZ,"buggy frozen-UKF-column artifact (do not use)"
-cross_current,31.91,BASARISIZ,"buggy frozen-UKF-column artifact (do not use)"
-diagonal_current,46.03,BASARISIZ,"buggy frozen-UKF-column artifact (do not use)"
-reverse_current,32.88,BASARISIZ,"buggy frozen-UKF-column artifact (do not use)"
-hard_cross_current,35.09,BASARISIZ,"buggy frozen-UKF-column artifact (do not use)"

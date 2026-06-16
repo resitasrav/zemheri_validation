@@ -1,0 +1,3 @@
+                        Doğrulama kararı  navigation_valid oranı  imu_ok oranı  dvl_ok oranı  pressure_ok oranı
+KABUL - sensör veri sürekliliği sağlandı                     1.0           1.0           1.0                1.0
+[INFO] [1781522203.364690129] [rosbag2_storage]: Opened database '/home/melikebeyazli/zemheri_ws/src/zemheri_ros2/analysis/final_validation/results/sensor_health_20260615_141554/recording/bag/bag_0.db3' for READ_ONLY.

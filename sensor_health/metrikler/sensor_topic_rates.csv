@@ -1,0 +1,8 @@
+Topic,Mesaj sayısı,Ortalama hız (Hz),Alt sınır (Hz),Sonuç
+/imu/data,7779,177.53474205450817,20.0,KABUL
+/dvl/raw,552,13.442361403723025,5.0,KABUL
+/dvl/quality_twist,590,13.449082337624986,5.0,KABUL
+/pressure/raw,1821,44.360830289839896,5.0,KABUL
+/pressure/depth_pose,1849,44.3875571689085,5.0,KABUL
+/battery/state,1982,48.297956088827306,0.5,KABUL
+/navigation/status,876,20.000045122520888,10.0,KABUL

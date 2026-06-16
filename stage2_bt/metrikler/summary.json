@@ -1,0 +1,17 @@
+{
+  "samples": 1138,
+  "duration_sec": 37.9,
+  "position_rmse_m": 0.7223707095030342,
+  "position_max_error_m": 0.9879357646822567,
+  "depth_rmse_m": 0.1775817999237137,
+  "speed_rmse_mps": 0.19129848156450743,
+  "roll_rmse_deg": 0.5149987227682026,
+  "pitch_rmse_deg": 2.5764765604071393,
+  "yaw_rmse_deg": 1.9447803443337304,
+  "yaw_max_error_deg": 5.157125392862086,
+  "gt_max_abs_roll_deg": 10.053089368035335,
+  "gt_max_abs_pitch_deg": 29.093692785699428,
+  "max_along_track_m": 42.72706251157351,
+  "max_abs_cross_track_m": 0.4335097815708475,
+  "stage2_pitch_over_30_deg_valid": false
+}

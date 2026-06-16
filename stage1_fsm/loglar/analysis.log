@@ -1,0 +1,22 @@
+{
+  "samples": 3226,
+  "duration_sec": 107.5,
+  "position_rmse_m": 1.3406528813511343,
+  "position_max_error_m": 1.644053151204754,
+  "depth_rmse_m": 0.07485829260180901,
+  "speed_rmse_mps": 0.1695437231744917,
+  "roll_rmse_deg": 0.46882667863833133,
+  "pitch_rmse_deg": 0.8714920048318201,
+  "yaw_rmse_deg": 3.378825295545771,
+  "yaw_max_error_deg": 6.507848379169004,
+  "gt_max_abs_roll_deg": 10.382152767635747,
+  "gt_max_abs_pitch_deg": 9.731543109306418,
+  "max_along_track_m": 73.84349360035667,
+  "max_abs_cross_track_m": 32.600960414228204,
+  "stage1_finish_line_error_m": 3.1974955718202356,
+  "stage1_finish_cross_track_m": 32.4550369407001,
+  "stage1_outbound_50m_valid": true,
+  "stage1_finish_line_valid": false
+}
+[INFO] [1781523415.308371831] [rosbag2_storage]: Opened database '/home/melikebeyazli/zemheri_ws/src/zemheri_ros2/analysis/final_validation/results/stage1_fsm_20260615_143444/recording/bag/bag_0.db3' for READ_ONLY.
+[INFO] [1781523420.675021609] [rosbag2_storage]: Opened database '/home/melikebeyazli/zemheri_ws/src/zemheri_ros2/analysis/final_validation/results/stage1_fsm_20260615_143444/recording/bag/bag_0.db3' for READ_ONLY.

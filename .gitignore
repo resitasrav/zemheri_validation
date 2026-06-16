@@ -1,102 +1,13 @@
-# ─────────────────────────────────────────────────────────────
-# SARA Validation Suite — jüri teslimi .gitignore
-# Amaç: ham/büyük/geçici dosyaları dışarıda tut; sadece curated
-# kanıt (özet CSV/PNG, Markdown, HTML, scriptler, küçük video) kalsın.
-# ─────────────────────────────────────────────────────────────
+# Ham bag ve yeniden uretilebilir ikili dosyalar
+**/*.db3
+**/*.mcap
+**/*.bag
+**/bag/
 
-# Python
+# Yerel geri donus arsivi. Paylasim deposuna eklenmez.
+arsiv/
+
+# Python/OS gecici dosyalari
 __pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# OS / editor
+*.pyc
 .DS_Store
-Thumbs.db
-.vscode/
-.idea/
-
-# Temporary files
-*.tmp
-*.temp
-*.bak
-*.old
-*.log
-*.out
-
-# Archives / handoff bundles (ham veri arşivleri repoya girmez)
-*.zip
-*.rar
-*.7z
-*.tar
-*.tar.gz
-*.bundle
-
-# ROS / colcon build outputs
-build/
-install/
-log/
-logs/
-
-# Gazebo / simulation cache
-.gz/
-gazebo_models/
-*.db
-
-# Rosbag ve ham/ağır kayıtlar
-*.bag
-*.db3
-*.mcap
-rosbag2_*/
-recording/
-recordings/
-raw_recordings/
-/final_validation/
-/final_validation*/
-analysis/final_validation/results/**/recording/
-
-# Büyük ham telemetry dökümleri
-raw/
-raw_data/
-tmp/
-temp/
-analysis/final_validation/results/**/metrics/*timeseries*.csv
-analysis/final_validation/results/**/metrics/aligned_*.csv
-analysis/final_validation/results/**/metrics/rl_best_episode.csv
-analysis/final_validation/results/**/recording/telemetry.csv
-
-# Videolar: varsayılan yok say; yalnızca reports/ altındaki curated olanı tut
-*.mp4
-!reports/*.mp4
-
-# ROS 2 ham kayıt klasörleri ve formatları
-*.mcap
-rosbag2_*/
-raw/
-raw_data/
-
-# Curated doğrulama artefaktlarını KORU
-!data/**/*.csv
-!docs/**/*.csv
-!docs/**/*.json
-!docs/**/*.png
-!docs/**/*.pdf
-!docs/**/*.drawio
-!docs/**/*.md
-!reports/**/*.html
-!reports/**/*.png
-!reports/**/*.mp4
-!notebooks/**/*.ipynb
-!scripts/**/*.py
-!src/**/*.py
-!src/**/*.md
-!tools/**/*
-
-# CLAUDE.md jüri deposuna gönderilmez (yalnızca yerel bağlam dosyası)
-CLAUDE.md

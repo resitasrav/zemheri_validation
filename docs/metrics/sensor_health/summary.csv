@@ -1,2 +1,0 @@
-test,decision,accepted,navigation_valid_ratio,imu_ok_ratio,dvl_ok_ratio,pressure_ok_ratio,min_topic_rate_ratio
-sensor_health,KABUL — sensör veri sürekliliği sağlandı,True,1.0,1.0,1.0,1.0,2.2563410965299036

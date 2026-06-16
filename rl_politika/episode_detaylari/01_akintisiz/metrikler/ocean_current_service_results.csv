@@ -1,0 +1,3 @@
+service,success,message
+set_mode_constant,True,Mode updated
+set_target,True,Target current updated

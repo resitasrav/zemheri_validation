@@ -1,0 +1,2 @@
+samples,duration_sec,position_rmse_m,position_max_error_m,depth_rmse_m,speed_rmse_mps,roll_rmse_deg,pitch_rmse_deg,yaw_rmse_deg,yaw_max_error_deg,gt_max_abs_roll_deg,gt_max_abs_pitch_deg,max_along_track_m,max_abs_cross_track_m,stage2_pitch_over_30_deg_valid
+1138,37.9,0.7223707095030342,0.9879357646822567,0.1775817999237137,0.19129848156450743,0.5149987227682026,2.5764765604071393,1.9447803443337304,5.157125392862086,10.053089368035335,29.093692785699428,42.72706251157351,0.4335097815708475,False
