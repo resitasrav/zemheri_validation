@@ -6,9 +6,6 @@
 
 Bu test, Asama-1 gorev yonetimi icin FSM akisini, derinlik tutma davranisini, donus/gecis fazlarini ve baslangic hattina donus performansini incelemek icin kosulmustur.
 
-<video src="../mimari/stage1_fsm.webm" width="1000" controls></video>
-
-
 ## Sayisal Ozet
 
 | Metrik | Deger |

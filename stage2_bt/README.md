@@ -6,8 +6,6 @@
 
 Bu test, Asama-2 icin FSM ve BT destekli atis hazirlik akisini; 30 m guvenli bolgeye ilerleme, hizalanma, pitch-up manevrasi ve yuzeye yaklasma davranisi uzerinden degerlendirmek icin kosulmustur.
 
-<video src="../mimari/stage2_bt.webm" width="1000" controls></video>
-
 ## Sayisal Ozet
 
 | Metrik | Deger |
