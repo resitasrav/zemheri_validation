@@ -1,0 +1,86 @@
+schema_version: 1
+case: stage1_fsm
+status: completed
+started_at_utc: '2026-06-15T11:34:44.882558+00:00'
+completed_at_utc: '2026-06-15T11:37:01.553665+00:00'
+actual_duration_seconds: 136.667
+runner_arguments:
+  duration_seconds: 240.0
+  speed_mps: 0.8
+  depth_m: 5.0
+  distance_m: 30.0
+  cross_track_m: 5.0
+  waypoint_acceptance_m: 1.5
+  current_target_mps:
+  - 0.4
+  - 0.2
+  - 0.0
+  warmup_seconds: 5.0
+  state_wait_timeout_seconds: 30.0
+  external_mission: false
+validation_nodes:
+  /guidance_node:
+    available: true
+    parameters:
+      use_sim_time: true
+      publish_rate_hz: 50.0
+      goal_timeout_sec: 0.7
+      state_timeout_sec: 0.5
+      los_lookahead_m: 5.0
+      max_los_heading_correction_deg: 12.0
+      max_target_speed_mps: 2.25
+      degraded_navigation_speed_scale: 0.45
+  /resilience_dvl_delay_node:
+    available: false
+  /resilience_dvl_dropout_node:
+    available: false
+  /validation/resilience/oosm/ukf_filter_node_odom:
+    available: false
+recorded_topics:
+- /ground_truth/odometry
+- /odometry/ukf
+- /validation/resilience/raw_ukf
+- /validation/resilience/protected_ukf
+- /validation/resilience/oosm_ukf
+- /validation/resilience/status
+- /validation/resilience/disturbed_dvl
+- /navigation/status
+- /dvl/raw
+- /dvl/quality_twist
+- /imu/data
+- /imu/data_raw
+- /pressure/raw
+- /pressure/depth_pose
+- /auv/state
+- /auv/mission/status
+- /auv/failsafe/reset
+- /auv/fire/permission_candidate
+- /auv/fire/status
+- /auv/fire/actuator_command
+- /auv/fire/separation_confirmed
+- /auv/fire/capacitive_surface_valid
+- /auv/fire/capacitive_sensor_z
+- /guidance/goal
+- /guidance/setpoint
+- /sara_uuv/cmd_vel
+- /sara_uuv/propeller/cmd_angvel
+- /sara_uuv/fin_1/cmd_pos
+- /sara_uuv/fin_2/cmd_pos
+- /sara_uuv/fin_3/cmd_pos
+- /sara_uuv/fin_4/cmd_pos
+- /ocean_current
+- /ocean_current/status
+- /battery/state
+- /tf
+- /tf_static
+- /clock
+recording_directory: recording
+analysis:
+  status: completed
+  returncode: 0
+  command: ros2 run zemheri_simulation analyze_report_bag.py /home/melikebeyazli/zemheri_ws/src/zemheri_ros2/analysis/final_validation/results/stage1_fsm_20260615_143444/recording/bag
+    --output /home/melikebeyazli/zemheri_ws/src/zemheri_ros2/analysis/final_validation/results/stage1_fsm_20260615_143444
+git:
+  commit: unknown
+  dirty: null
+stop_reason: mission_terminal:COMPLETE

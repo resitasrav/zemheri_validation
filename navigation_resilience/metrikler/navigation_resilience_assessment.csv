@@ -1,0 +1,2 @@
+OOSM performans kararı,OOSM/Saf konum RMSE oranı,OOSM/Saf maksimum hata oranı,Sağlık denetimli/Saf konum RMSE oranı,Navigasyon sağlık kararı,Navigasyon geçerli oranı,Degraded oranı,Rapor notu
+BAŞARISIZ - OOSM ortalama veya maksimum hatayı fazla artırdı,1.186453202207256,1.231036949057103,0.9971192649737106,BAŞARILI - DVL kesintileri degraded olarak yönetildi,1.0,0.3074154067674586,OOSM performansı iyileştirilmeden doğruluk kazanımı olarak raporlanmamalıdır; sağlık/degraded davranışı ayrı sonuçtur.

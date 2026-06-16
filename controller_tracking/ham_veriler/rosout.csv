@@ -1,0 +1,61 @@
+wall_time,ros_time,level,name,message,file,line
+1781514507.9959211,9.996,20,system_recorder,CSV subscription added: /rosout [rcl_interfaces/msg/Log],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0151803,10.015,20,system_recorder,CSV subscription added: /ground_truth/odometry [nav_msgs/msg/Odometry],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0390384,10.037,20,system_recorder,CSV subscription added: /odometry/ukf [nav_msgs/msg/Odometry],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0438623,10.042,20,system_recorder,CSV subscription added: /navigation/status [zemheri_interfaces/msg/NavigationStatus],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.049162,10.047,20,system_recorder,CSV subscription added: /dvl/raw [marine_acoustic_msgs/msg/Dvl],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0516198,10.049,20,system_recorder,CSV subscription added: /dvl/quality_twist [geometry_msgs/msg/TwistWithCovarianceStamped],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.052643,10.05,20,system_recorder,CSV subscription added: /imu/data [sensor_msgs/msg/Imu],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.054195,10.052,20,system_recorder,CSV subscription added: /pressure/depth_pose [geometry_msgs/msg/PoseWithCovarianceStamped],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0550532,10.053,20,system_recorder,CSV subscription added: /auv/state [zemheri_interfaces/msg/AuvState],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0557547,10.054,20,system_recorder,CSV subscription added: /auv/mission/status [zemheri_interfaces/msg/MissionStatus],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0564628,10.054,20,system_recorder,CSV subscription added: /auv/failsafe/status [zemheri_interfaces/msg/SafetyStatus],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0572085,10.055,20,system_recorder,CSV subscription added: /auv/fire/status [zemheri_interfaces/msg/FireStatus],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0580535,10.056,20,system_recorder,CSV subscription added: /auv/fire/capacitive_surface_valid [std_msgs/msg/Bool],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0589268,10.057,20,system_recorder,CSV subscription added: /auv/fire/capacitive_sensor_z [std_msgs/msg/Float64],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.059649,10.057,20,system_recorder,CSV subscription added: /guidance/goal [zemheri_interfaces/msg/GuidanceGoal],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0603337,10.058,20,system_recorder,CSV subscription added: /guidance/setpoint [zemheri_interfaces/msg/GuidanceSetpoint],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0610378,10.059,20,system_recorder,CSV subscription added: /sara_uuv/cmd_vel [geometry_msgs/msg/Twist],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.061828,10.06,20,system_recorder,CSV subscription added: /sara_uuv/propeller/cmd_angvel [std_msgs/msg/Float64],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0625653,10.06,20,system_recorder,CSV subscription added: /sara_uuv/fin_1/cmd_pos [std_msgs/msg/Float64],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0643935,10.062,20,system_recorder,CSV subscription added: /sara_uuv/fin_2/cmd_pos [std_msgs/msg/Float64],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0655253,10.063,20,system_recorder,CSV subscription added: /sara_uuv/fin_3/cmd_pos [std_msgs/msg/Float64],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.066364,10.064,20,system_recorder,CSV subscription added: /sara_uuv/fin_4/cmd_pos [std_msgs/msg/Float64],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.066982,10.065,20,system_recorder,CSV subscription added: /ocean_current [geometry_msgs/msg/Vector3],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0674949,10.065,20,system_recorder,CSV subscription added: /ocean_current/status [std_msgs/msg/String],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0685837,10.066,20,system_recorder,CSV subscription added: /battery/state [sensor_msgs/msg/BatteryState],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0694284,10.067,20,system_recorder,CSV subscription added: /clock [rosgraph_msgs/msg/Clock],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.070223,10.068,20,system_recorder,CSV subscription added: /tf [tf2_msgs/msg/TFMessage],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0713968,10.069,20,system_recorder,CSV subscription added: /tf_static [tf2_msgs/msg/TFMessage],/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,203
+1781514508.0720737,10.07,20,system_recorder,System recording started: /home/melikebeyazli/zemheri_ws/src/zemheri_ros2/analysis/final_validation/results/controller_tracking_20260615_120825/recording,/home/melikebeyazli/zemheri_ws/install/zemheri_bringup/lib/zemheri_bringup/system_recorder_node.py,74
+1781514508.7800913,10.751,20,rosbag2_recorder,Subscribed to topic '/auv/fire/capacitive_sensor_z',./src/rosbag2_transport/recorder.cpp,368
+1781514508.7810683,10.753,20,rosbag2_recorder,Subscribed to topic '/auv/fire/capacitive_surface_valid',./src/rosbag2_transport/recorder.cpp,368
+1781514508.78177,10.753,20,rosbag2_recorder,Subscribed to topic '/pressure/depth_pose',./src/rosbag2_transport/recorder.cpp,368
+1781514508.9873676,10.951,20,rosbag2_recorder,Subscribed to topic '/ground_truth/odometry',./src/rosbag2_transport/recorder.cpp,368
+1781514508.9893603,10.953,20,rosbag2_recorder,Subscribed to topic '/dvl/raw',./src/rosbag2_transport/recorder.cpp,368
+1781514508.990268,10.954,20,rosbag2_recorder,Subscribed to topic '/odometry/ukf',./src/rosbag2_transport/recorder.cpp,368
+1781514508.9910016,10.954,20,rosbag2_recorder,Subscribed to topic '/ocean_current/status',./src/rosbag2_transport/recorder.cpp,368
+1781514508.9927154,10.955,20,rosbag2_recorder,Subscribed to topic '/navigation/status',./src/rosbag2_transport/recorder.cpp,368
+1781514508.9943485,10.957,20,rosbag2_recorder,Subscribed to topic '/ocean_current',./src/rosbag2_transport/recorder.cpp,368
+1781514508.9950414,10.957,20,rosbag2_recorder,Subscribed to topic '/imu/data',./src/rosbag2_transport/recorder.cpp,368
+1781514508.9972136,10.957,20,rosbag2_recorder,Subscribed to topic '/tf',./src/rosbag2_transport/recorder.cpp,368
+1781514508.9993684,10.958,20,rosbag2_recorder,Subscribed to topic '/clock',./src/rosbag2_transport/recorder.cpp,368
+1781514509.0010033,10.959,20,rosbag2_recorder,Subscribed to topic '/battery/state',./src/rosbag2_transport/recorder.cpp,368
+1781514509.002973,10.961,20,rosbag2_recorder,Subscribed to topic '/tf_static',./src/rosbag2_transport/recorder.cpp,368
+1781514509.1070108,11.063,20,rosbag2_recorder,Subscribed to topic '/guidance/setpoint',./src/rosbag2_transport/recorder.cpp,368
+1781514509.213106,11.161,20,rosbag2_recorder,Subscribed to topic '/auv/failsafe/status',./src/rosbag2_transport/recorder.cpp,368
+1781514509.2161715,11.164,20,rosbag2_recorder,Subscribed to topic '/sara_uuv/fin_4/cmd_pos',./src/rosbag2_transport/recorder.cpp,368
+1781514509.2180622,11.166,20,rosbag2_recorder,Subscribed to topic '/sara_uuv/fin_1/cmd_pos',./src/rosbag2_transport/recorder.cpp,368
+1781514509.219231,11.167,20,rosbag2_recorder,Subscribed to topic '/sara_uuv/fin_2/cmd_pos',./src/rosbag2_transport/recorder.cpp,368
+1781514509.2199097,11.167,20,rosbag2_recorder,Subscribed to topic '/sara_uuv/propeller/cmd_angvel',./src/rosbag2_transport/recorder.cpp,368
+1781514509.2216015,11.17,20,rosbag2_recorder,Subscribed to topic '/sara_uuv/fin_3/cmd_pos',./src/rosbag2_transport/recorder.cpp,368
+1781514509.3237965,11.268,20,rosbag2_recorder,Subscribed to topic '/auv/state',./src/rosbag2_transport/recorder.cpp,368
+1781514509.3250005,11.269,20,rosbag2_recorder,Subscribed to topic '/sara_uuv/cmd_vel',./src/rosbag2_transport/recorder.cpp,368
+1781514509.8458145,11.765,20,rosbag2_recorder,Subscribed to topic '/guidance/goal',./src/rosbag2_transport/recorder.cpp,368
+1781514516.341061,17.98,20,report_test_runner,Case=controller_tracking | output=/home/melikebeyazli/zemheri_ws/src/zemheri_ros2/analysis/final_validation/results/controller_tracking_20260615_120825,/home/melikebeyazli/zemheri_ws/install/zemheri_simulation/lib/zemheri_simulation/report_test_runner.py,601
+1781514527.2061527,28.051,30,dvl_quality_gate_node,DVL measurement rejected: beam data invalid,/home/melikebeyazli/zemheri_ws/src/zemheri_ros2/zemheri_navigation/src/dvl_quality_gate_node.cpp,55
+1781514542.091763,42.048,30,dvl_quality_gate_node,DVL measurement rejected: beam data invalid,/home/melikebeyazli/zemheri_ws/src/zemheri_ros2/zemheri_navigation/src/dvl_quality_gate_node.cpp,55
+1781514547.1362221,46.799,30,dvl_quality_gate_node,DVL measurement rejected: beam data invalid,/home/melikebeyazli/zemheri_ws/src/zemheri_ros2/zemheri_navigation/src/dvl_quality_gate_node.cpp,55
+1781514549.2960997,48.844,30,dvl_quality_gate_node,DVL measurement rejected: beam data invalid,/home/melikebeyazli/zemheri_ws/src/zemheri_ros2/zemheri_navigation/src/dvl_quality_gate_node.cpp,55
+1781514551.4711826,50.889,30,dvl_quality_gate_node,DVL measurement rejected: beam data invalid,/home/melikebeyazli/zemheri_ws/src/zemheri_ros2/zemheri_navigation/src/dvl_quality_gate_node.cpp,55
+1781514561.303005,60.154,30,report_test_runner,Test ROS-time duration limit reached; stopping recording without requesting mission abort.,/home/melikebeyazli/zemheri_ws/install/zemheri_simulation/lib/zemheri_simulation/report_test_runner.py,182

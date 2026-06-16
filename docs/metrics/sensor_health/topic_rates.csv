@@ -1,8 +1,0 @@
-topic,messages,rate_hz,min_hz,result
-/imu/data,7720,200.17115294849853,20.0,KABUL
-/dvl/raw,586,15.172735760971056,5.0,KABUL
-/dvl/quality_twist,586,15.172735760971056,5.0,KABUL
-/pressure/raw,1930,50.033718939669036,5.0,KABUL
-/pressure/depth_pose,1930,50.033718939669036,5.0,KABUL
-/battery/state,2099,54.44401193719995,0.5,KABUL
-/navigation/status,871,22.563410965299035,10.0,KABUL

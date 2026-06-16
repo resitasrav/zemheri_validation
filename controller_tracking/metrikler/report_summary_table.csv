@@ -1,0 +1,15 @@
+Metrik,Değer,Birim,Açıklama,Okuma Notu
+Örnek sayısı,1478,adet,Analizde kullanılan hizalı UKF örneği,Kayıt kapsamını gösterir
+Test süresi,49.2300,s,Analiz edilen kayıt süresi,Kayıt kapsamını gösterir
+3B konum RMSE,0.1997,m,UKF ile ground truth arasındaki ortalama 3B konum hata büyüklüğü,Düşük değer daha iyi; simülasyon ground truth referanslıdır
+Maksimum 3B konum hatası,1.1287,m,Test boyunca gözlenen en yüksek 3B konum hatası,Düşük değer daha iyi; simülasyon ground truth referanslıdır
+Derinlik RMSE,0.0011,m,UKF ve ground truth Z değerleri arasındaki hata,Düşük değer daha iyi; simülasyon ground truth referanslıdır
+Toplam hız RMSE,0.1516,m/s,UKF ve ground truth toplam hız büyüklükleri arasındaki hata,Düşük değer daha iyi; simülasyon ground truth referanslıdır
+Roll RMSE,0.0058,°,Roll kestirim hatası,Düşük değer daha iyi; simülasyon ground truth referanslıdır
+Pitch RMSE,0.0046,°,Pitch kestirim hatası,Düşük değer daha iyi; simülasyon ground truth referanslıdır
+Yaw RMSE,0.0112,°,Heading/yaw kestirim hatası,Düşük değer daha iyi; simülasyon ground truth referanslıdır
+Maksimum yaw hatası,0.0255,°,Test boyunca gözlenen en yüksek mutlak yaw hatası,Düşük değer daha iyi; simülasyon ground truth referanslıdır
+Gerçek maksimum mutlak roll,5.2905,°,Ground truth üzerinde gözlenen araç roll açısı; kestirim hatası değildir,Düşük değer daha iyi; simülasyon ground truth referanslıdır
+Gerçek maksimum mutlak pitch,3.2622,°,Ground truth üzerinde gözlenen araç pitch açısı; kestirim hatası değildir,Düşük değer daha iyi; simülasyon ground truth referanslıdır
+Maksimum rota doğrultusu mesafesi,36.2628,m,Başlangıç heading doğrultusunda ulaşılan en ileri konum,Düşük değer daha iyi; simülasyon ground truth referanslıdır
+Maksimum mutlak yanal sapma,6.5884,m,Başlangıç doğrultusuna göre gözlenen en yüksek yanal sapma,Düşük değer daha iyi; simülasyon ground truth referanslıdır

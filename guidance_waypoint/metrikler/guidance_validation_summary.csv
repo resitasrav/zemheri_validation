@@ -1,0 +1,2 @@
+Güdüm modu,Doğrulama kararı,Waypoint sayısı,Cross-track RMSE (m),Maksimum mutlak cross-track hata (m),Başlangıç cross-track hata (m),Son cross-track hata (m),Cross-track azalma oranı,Heading hata RMSE (deg),Maksimum mutlak heading hata (deg),Son waypoint mesafesi (m),Test süresi (s)
+WAYPOINT,KABUL - waypoint rotası tamamlandı,4,0.5797398283118884,1.1815992824769848,0.0,1.1523101602961225,,5.419215868642915,15.903227706134702,2.5380908953687267,76.29532051086426

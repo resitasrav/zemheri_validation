@@ -1,0 +1,3 @@
+ Akıntı örnek sayısı  Ortalama X (m/s)  Ortalama Y (m/s)  Ortalama Z (m/s)  Maksimum büyüklük (m/s)
+                 861          0.335221          0.050474          0.005908                 0.556835
+[INFO] [1781520697.801581421] [rosbag2_storage]: Opened database '/home/melikebeyazli/zemheri_ws/src/zemheri_ros2/analysis/final_validation/results/ocean_current_services_20260615_135048/recording/bag/bag_0.db3' for READ_ONLY.

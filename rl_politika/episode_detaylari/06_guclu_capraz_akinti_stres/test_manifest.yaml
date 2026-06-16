@@ -1,0 +1,90 @@
+schema_version: 1
+case: rl_policy_hard_cross_current
+status: duration_limit_reached
+started_at_utc: '2026-06-15T20:55:39.109687+00:00'
+completed_at_utc: '2026-06-15T20:57:46.863997+00:00'
+actual_duration_seconds: 127.741
+runner_arguments:
+  duration_seconds: 95.0
+  speed_mps: 0.8
+  depth_m: 2.0
+  distance_m: 50.0
+  cross_track_m: 5.0
+  waypoint_acceptance_m: 1.5
+  current_target_mps:
+  - 0.0
+  - 0.4
+  - 0.0
+  warmup_seconds: 5.0
+  rl_dive_speed_mps: 1.2
+  rl_depth_tolerance_m: 0.15
+  rl_settle_duration_seconds: 3.0
+  rl_settle_timeout_seconds: 75.0
+  state_wait_timeout_seconds: 30.0
+  external_mission: false
+validation_nodes:
+  /guidance_node:
+    available: true
+    parameters:
+      use_sim_time: true
+      publish_rate_hz: 50.0
+      goal_timeout_sec: 0.7
+      state_timeout_sec: 0.5
+      los_lookahead_m: 5.0
+      max_los_heading_correction_deg: 12.0
+      max_target_speed_mps: 2.25
+      degraded_navigation_speed_scale: 0.45
+  /resilience_dvl_delay_node:
+    available: false
+  /resilience_dvl_dropout_node:
+    available: false
+  /validation/resilience/oosm/ukf_filter_node_odom:
+    available: false
+recorded_topics:
+- /ground_truth/odometry
+- /odometry/ukf
+- /validation/resilience/raw_ukf
+- /validation/resilience/protected_ukf
+- /validation/resilience/oosm_ukf
+- /validation/resilience/status
+- /validation/resilience/disturbed_dvl
+- /navigation/status
+- /dvl/raw
+- /dvl/quality_twist
+- /imu/data
+- /imu/data_raw
+- /pressure/raw
+- /pressure/depth_pose
+- /auv/state
+- /auv/mission/status
+- /auv/failsafe/reset
+- /auv/fire/permission_candidate
+- /auv/fire/status
+- /auv/fire/actuator_command
+- /auv/fire/separation_confirmed
+- /auv/fire/capacitive_surface_valid
+- /auv/fire/capacitive_sensor_z
+- /guidance/goal
+- /guidance/setpoint
+- /sara_uuv/cmd_vel
+- /sara_uuv/propeller/cmd_angvel
+- /sara_uuv/fin_1/cmd_pos
+- /sara_uuv/fin_2/cmd_pos
+- /sara_uuv/fin_3/cmd_pos
+- /sara_uuv/fin_4/cmd_pos
+- /ocean_current
+- /ocean_current/status
+- /battery/state
+- /tf
+- /tf_static
+- /clock
+recording_directory: recording
+analysis:
+  status: completed
+  returncode: 0
+  command: ros2 run zemheri_simulation rl_policy_validation.py /home/melikebeyazli/zemheri_ws/src/zemheri_ros2/analysis/final_validation/results/rl_policy_hard_cross_current_20260615_235539/recording/bag
+    --output /home/melikebeyazli/zemheri_ws/src/zemheri_ros2/analysis/final_validation/results/rl_policy_hard_cross_current_20260615_235539
+git:
+  commit: 44fec62442b52b5a08b495c7cf5598e3d57c4d5d
+  dirty: true
+stop_reason: duration_limit_reached

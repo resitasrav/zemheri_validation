@@ -1,0 +1,2 @@
+session,recording_duration_sec,message_count,topic_count,resource_sample_count,rosout_count,rosout_levels,bag_size_mb,average_bag_mb_s,estimated_one_hour_bag_mb,generated_figures
+recording,44.41939926147461,81871,26,1000,53,"{'20': 52, '30': 1}",12.565903663635254,0.282892246913699,1018.4120888893165,"['known_signal_timeseries.png', 'process_cpu_max.png', 'process_memory_max.png', 'rosout_levels.png', 'topic_counts.png', 'topic_rates.png']"
